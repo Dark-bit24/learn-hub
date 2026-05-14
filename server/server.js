@@ -27,6 +27,7 @@ app.use(cors({
     "http://localhost:5173",
     "https://learn-hub-psi-ashen.vercel.app"
   ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
 
