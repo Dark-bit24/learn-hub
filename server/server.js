@@ -21,9 +21,10 @@ const app = express();
 // MIDDLEWARE - runs on every request
 // ============================================
 
-// Allow Vue frontend to communicate with backend
+// Allow frontend to communicate with backend
+const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:5173'].filter(Boolean);
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: allowedOrigins.length > 0 ? allowedOrigins : '*',
   credentials: true
 }));
 

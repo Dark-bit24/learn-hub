@@ -58,7 +58,7 @@
             <button @click="showPreview = true" class="btn-primary text-sm py-2">
               📖 Read Online
             </button>
-            <a :href="`http://localhost:5000/api/resources/${resource._id}/download`"
+            <a :href="`${BASE_URL}/api/resources/${resource._id}/download`"
               class="btn-secondary text-sm py-2 inline-block">
               Download File
             </a>
@@ -101,7 +101,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/authStore'
-import api from '../services/api'
+import api, { BASE_URL } from '../services/api'
 import NotePreviewModal from '../components/NotePreviewModal.vue'
 
 const route = useRoute()

@@ -17,14 +17,14 @@
       <div class="flex-1 bg-gray-50 overflow-auto p-4 flex items-center justify-center">
         <!-- PDF Viewer -->
         <iframe v-if="isPdf" 
-          :src="`http://localhost:5000${fileUrl}#toolbar=0`" 
+          :src="`${BASE_URL}${fileUrl}#toolbar=0`" 
           class="w-full h-full rounded-lg shadow-sm border border-gray-200"
           frameborder="0">
         </iframe>
 
         <!-- Image Viewer -->
         <img v-else-if="isImage" 
-          :src="`http://localhost:5000${fileUrl}`" 
+          :src="`${BASE_URL}${fileUrl}`" 
           class="max-w-full max-h-full object-contain rounded-lg shadow-sm" 
           alt="Note preview" />
 
@@ -32,7 +32,7 @@
         <div v-else class="text-center">
           <div class="text-6xl mb-4">📄</div>
           <p class="text-gray-500">Preview not available for this file type.</p>
-          <a :href="`http://localhost:5000/api/resources/${resourceId}/download`" class="btn-primary mt-4 inline-block">
+          <a :href="`${BASE_URL}/api/resources/${resourceId}/download`" class="btn-primary mt-4 inline-block">
             Download to View
           </a>
         </div>
@@ -41,7 +41,7 @@
       <!-- Modal Footer -->
       <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
         <button @click="$emit('close')" class="btn-secondary">Close</button>
-        <a :href="`http://localhost:5000/api/resources/${resourceId}/download`" class="btn-primary">
+        <a :href="`${BASE_URL}/api/resources/${resourceId}/download`" class="btn-primary">
           Download File
         </a>
       </div>
@@ -51,6 +51,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { BASE_URL } from '../services/api'
 
 const props = defineProps({
   isOpen: Boolean,
