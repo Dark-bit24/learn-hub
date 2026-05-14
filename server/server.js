@@ -60,6 +60,11 @@ app.use('/api/users', require('./routes/userRoutes'));
 // Admin routes
 app.use('/api/admin', require('./routes/adminRoutes'));
 
+// API status check route
+app.get('/api', (req, res) => {
+  res.json({ message: 'API working' });
+});
+
 // Test route - check if server is running
 app.get('/', (req, res) => {
   res.send("Backend is connected");
@@ -76,7 +81,7 @@ app.use((req, res) => {
 
 // Handle server errors
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Registration Error:', err);
   res.status(500).json({ message: 'Server error', error: err.message });
 });
 
