@@ -23,7 +23,11 @@ const app = express();
 
 // Allow frontend to communicate with backend
 app.use(cors({
-  origin: "*"
+  origin: [
+    "http://localhost:5173",
+    "https://learn-hub-psi-ashen.vercel.app"
+  ],
+  credentials: true
 }));
 
 // Allow server to read JSON data from requests
