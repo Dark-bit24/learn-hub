@@ -22,10 +22,8 @@ const app = express();
 // ============================================
 
 // Allow frontend to communicate with backend
-const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:5173'].filter(Boolean);
 app.use(cors({
-  origin: allowedOrigins.length > 0 ? allowedOrigins : '*',
-  credentials: true
+  origin: "*"
 }));
 
 // Allow server to read JSON data from requests
@@ -55,7 +53,7 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 
 // Test route - check if server is running
 app.get('/', (req, res) => {
-  res.json({ message: '🎓 Learning Platform API is running!' });
+  res.send("Backend is connected");
 });
 
 // ============================================
