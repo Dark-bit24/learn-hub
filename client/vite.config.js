@@ -14,5 +14,15 @@ export default defineConfig({
     watch: {
       usePolling: true
     }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['vue', 'vue-router', 'pinia', 'axios']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000
   }
-})
+});

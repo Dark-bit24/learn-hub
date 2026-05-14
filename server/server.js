@@ -6,6 +6,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path');
+const compression = require('compression');
 const connectDB = require('./config/db');
 
 // Load environment variables from .env file
@@ -20,6 +21,9 @@ const app = express();
 // ============================================
 // MIDDLEWARE - runs on every request
 // ============================================
+
+// Enable Gzip compression
+app.use(compression());
 
 // Allow frontend to communicate with backend
 app.use(cors({
@@ -37,8 +41,8 @@ app.use(express.json());
 // Allow server to read form data
 app.use(express.urlencoded({ extended: true }));
 
-// Make uploaded files accessible via URL
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Make uploaded files accessible via URL with 1-day caching
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), { maxAge: '1d' }));
 
 // ============================================
 // ROUTES - API endpoints
