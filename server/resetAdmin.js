@@ -16,7 +16,7 @@ const resetAdmin = async () => {
     const user = await User.findOneAndUpdate(
       { email },
       { 
-        name: 'Admin User',
+        username: 'Admin User',
         password: hashedPassword,
         role: 'admin',
         isApproved: true 

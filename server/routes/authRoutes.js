@@ -2,18 +2,129 @@
 // AUTH ROUTES
 // ============================================
 
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { registerUser, loginUser, getMe } = require('../controllers/authController');
-const { protect } = require('../middleware/authMiddleware');
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+const { protect } = require("../middleware/authMiddleware");
 
-// POST /api/auth/register → Create new account
-router.post('/register', registerUser);
+// --------------------------------------------
+// REGISTER ROUTE
+// --------------------------------------------
+router.post("/register", async (req, res) => {
+  try {
+    const { username, email, password, role } = req.body;
 
-// POST /api/auth/login → Login
-router.post('/login', loginUser);
+    if (!username || !email || !password) {
+      return res.status(400).json({
+        message: "All fields required"
+      });
+    }
 
-// GET /api/auth/me → Get current user (protected)
-router.get('/me', protect, getMe);
+    // Check if user exists
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "Email already registered" });
+    }
+
+    // Create user
+    const user = await User.create({
+      username,
+      email,
+      password, // hashed by model pre-save hook
+      role: role || "student",
+      isApproved: role === "teacher" ? false : true
+    });
+
+    res.status(201).json({
+      message: "User registered successfully",
+      token: jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" }),
+      user: {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+        role: user.role
+      }
+    });
+
+  } catch (err) {
+    console.log("REGISTER ERROR:", err);
+    res.status(500).json({
+      message: "Server error",
+      error: err.message
+    });
+  }
+});
+
+// --------------------------------------------
+// LOGIN ROUTE (EXACT FIX)
+// --------------------------------------------
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check fields
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password required"
+      });
+    }
+
+    // Find user
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found"
+      });
+    }
+
+    // Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Invalid password"
+      });
+    }
+
+    // Create token
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.status(200).json({
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+        role: user.role
+      }
+    });
+
+  } catch (err) {
+    console.log("LOGIN ERROR:", err);
+
+    res.status(500).json({
+      message: "Server error"
+    });
+  }
+});
+
+// --------------------------------------------
+// GET ME ROUTE
+// --------------------------------------------
+router.get("/me", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 module.exports = router;

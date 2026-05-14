@@ -36,7 +36,7 @@
           <span>👁 {{ resource.views }} views</span>
           <span>❤️ {{ resource.saves?.length || 0 }} saves</span>
           <span>📅 {{ formatDate(resource.createdAt) }}</span>
-          <span>By: <strong class="text-gray-700">{{ resource.uploadedBy?.name }}</strong></span>
+          <span>By: <strong class="text-gray-700">{{ resource.uploadedBy?.username }}</strong></span>
         </div>
 
         <!-- Description -->

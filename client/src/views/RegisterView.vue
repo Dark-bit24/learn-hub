@@ -24,8 +24,8 @@
 
       <form v-if="!successMsg" @submit.prevent="handleRegister" class="space-y-5">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
-          <input v-model="form.name" type="text" placeholder="John Doe"
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Username</label>
+          <input v-model="form.username" type="text" placeholder="johndoe123"
             class="input-field" required />
         </div>
         <div>
@@ -87,14 +87,14 @@ const router = useRouter()
 const successMsg = ref('')
 
 const form = reactive({ 
-  name: '', 
+  username: '', 
   email: '', 
   password: '',
   role: 'student'
 })
 
 const handleRegister = async () => {
-  const result = await authStore.register(form.name, form.email, form.password, form.role)
+  const result = await authStore.register(form.username, form.email, form.password, form.role)
   if (result.success) {
     if (result.message) {
       successMsg.value = result.message

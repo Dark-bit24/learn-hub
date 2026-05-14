@@ -21,10 +21,10 @@
       <div class="flex items-center gap-2">
         <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
           <span class="text-blue-600 text-xs font-bold">
-            {{ resource.uploadedBy?.name?.charAt(0).toUpperCase() }}
+            {{ resource.uploadedBy?.username?.charAt(0).toUpperCase() }}
           </span>
         </div>
-        <span class="text-xs text-gray-500">{{ resource.uploadedBy?.name }}</span>
+        <span class="text-xs text-gray-500">{{ resource.uploadedBy?.username }}</span>
       </div>
       <span class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
         {{ resource.subject }}

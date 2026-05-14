@@ -24,11 +24,11 @@ export const useAuthStore = defineStore('auth', {
 
   actions: {
     // REGISTER
-    async register(name, email, password, role = 'student') {
+    async register(username, email, password, role = 'student') {
       this.loading = true;
       this.error = null;
       try {
-        const { data } = await api.post('/auth/register', { name, email, password, role });
+        const { data } = await api.post('/auth/register', { username, email, password, role });
         
         // If it's a teacher, we don't log them in yet because they need approval
         if (role === 'teacher') {

@@ -6,11 +6,11 @@
       <div class="flex items-center gap-6">
         <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
           <span class="text-blue-600 font-bold text-3xl">
-            {{ authStore.currentUser?.name?.charAt(0).toUpperCase() }}
+            {{ authStore.currentUser?.username?.charAt(0).toUpperCase() }}
           </span>
         </div>
         <div>
-          <h1 class="text-2xl font-bold text-gray-900">{{ authStore.currentUser?.name }}</h1>
+          <h1 class="text-2xl font-bold text-gray-900">{{ authStore.currentUser?.username }}</h1>
           <p class="text-gray-500">{{ authStore.currentUser?.email }}</p>
           <p v-if="authStore.currentUser?.bio" class="text-gray-600 mt-1 text-sm">
             {{ authStore.currentUser?.bio }}

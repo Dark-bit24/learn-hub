@@ -65,9 +65,9 @@
                   <td class="px-6 py-4">
                     <div class="flex items-center gap-3">
                       <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-indigo-700 font-bold shadow-sm">
-                        {{ teacher.name.charAt(0).toUpperCase() }}
+                        {{ teacher.username.charAt(0).toUpperCase() }}
                       </div>
-                      <div class="font-semibold text-slate-800">{{ teacher.name }}</div>
+                      <div class="font-semibold text-slate-800">{{ teacher.username }}</div>
                     </div>
                   </td>
                   <td class="px-6 py-4 text-slate-500 font-medium">{{ teacher.email }}</td>
@@ -112,9 +112,9 @@
                   <td class="px-6 py-4">
                     <div class="flex items-center gap-2">
                       <div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">
-                        {{ resource.uploadedBy?.name?.charAt(0).toUpperCase() || '?' }}
+                        {{ resource.uploadedBy?.username?.charAt(0).toUpperCase() || '?' }}
                       </div>
-                      <span class="text-slate-600 font-medium text-sm">{{ resource.uploadedBy?.name || 'Unknown' }}</span>
+                      <span class="text-slate-600 font-medium text-sm">{{ resource.uploadedBy?.username || 'Unknown' }}</span>
                     </div>
                   </td>
                   <td class="px-6 py-4">
@@ -163,10 +163,10 @@
                     <div class="flex items-center gap-3">
                       <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shadow-sm"
                         :class="user.role === 'admin' ? 'bg-gradient-to-br from-purple-100 to-fuchsia-100 text-purple-700' : 'bg-gradient-to-br from-slate-100 to-gray-200 text-slate-700'">
-                        {{ user.name.charAt(0).toUpperCase() }}
+                        {{ user.username.charAt(0).toUpperCase() }}
                       </div>
                       <div>
-                        <div class="font-semibold text-slate-800">{{ user.name }}</div>
+                        <div class="font-semibold text-slate-800">{{ user.username }}</div>
                         <div class="text-xs font-medium text-slate-500">{{ user.email }}</div>
                       </div>
                     </div>
@@ -209,8 +209,8 @@
             
             <form @submit.prevent="handleAddUser" class="space-y-5 relative z-10">
               <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Full Name</label>
-                <input v-model="newUser.name" type="text" class="w-full bg-white/50 border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded-xl px-4 py-3 text-slate-800 font-medium placeholder-slate-400 transition-all outline-none shadow-sm" placeholder="John Doe" required />
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Username</label>
+                <input v-model="newUser.username" type="text" class="w-full bg-white/50 border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded-xl px-4 py-3 text-slate-800 font-medium placeholder-slate-400 transition-all outline-none shadow-sm" placeholder="johndoe123" required />
               </div>
               <div>
                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Email Address</label>
@@ -272,7 +272,7 @@ const loading = ref(false)
 // Add User state
 const showAddUserModal = ref(false)
 const newUser = reactive({
-  name: '',
+  username: '',
   email: '',
   password: '',
   role: 'student'
@@ -334,7 +334,7 @@ const handleAddUser = async () => {
     await api.post('/admin/users', newUser)
     showAddUserModal.value = false
     // Reset form
-    newUser.name = ''
+    newUser.username = ''
     newUser.email = ''
     newUser.password = ''
     newUser.role = 'student'

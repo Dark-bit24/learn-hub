@@ -42,10 +42,10 @@
               class="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors">
               <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                 <span class="text-blue-600 font-semibold text-sm">
-                  {{ authStore.currentUser?.name?.charAt(0).toUpperCase() }}
+                  {{ authStore.currentUser?.username?.charAt(0).toUpperCase() }}
                 </span>
               </div>
-              <span class="hidden md:block font-medium text-sm">{{ authStore.currentUser?.name }}</span>
+              <span class="hidden md:block font-medium text-sm">{{ authStore.currentUser?.username }}</span>
             </RouterLink>
             <button @click="handleLogout"
               class="text-sm text-gray-500 hover:text-red-600 font-medium transition-colors">
