@@ -9,9 +9,9 @@ const resetAdmin = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/learning-platform');
     
-    const email = 'admin@gmail.com';
+    const email = 'admin@example.com';
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash('password123', salt);
+    const hashedPassword = await bcrypt.hash('password@123', salt);
     
     const user = await User.findOneAndUpdate(
       { email },
@@ -26,7 +26,7 @@ const resetAdmin = async () => {
     
     console.log('Admin account reset successfully:');
     console.log('Email:', user.email);
-    console.log('Password: password123');
+    console.log('Password: password@123');
     console.log('Role:', user.role);
     console.log('isApproved:', user.isApproved);
     
