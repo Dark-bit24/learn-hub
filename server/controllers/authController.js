@@ -22,10 +22,10 @@ const generateToken = (userId) => {
 // ============================================
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { username, email, password, role } = req.body;
 
     // Check if all fields are provided
-    if (!name || !email || !password) {
+    if (!username || !email || !password) {
       return res.status(400).json({ message: 'Please fill all fields' });
     }
 
@@ -41,7 +41,7 @@ const registerUser = async (req, res) => {
 
     // Create new user (password is hashed automatically by model)
     const user = await User.create({
-      name,
+      username,
       email,
       password,
       role: role || 'student',
@@ -54,7 +54,7 @@ const registerUser = async (req, res) => {
       token: generateToken(user._id),
       user: {
         _id: user._id,
-        name: user.name,
+        username: user.username,
         email: user.email,
         avatar: user.avatar,
         bio: user.bio,
@@ -105,7 +105,7 @@ const loginUser = async (req, res) => {
       token: generateToken(user._id),
       user: {
         _id: user._id,
-        name: user.name,
+        username: user.username,
         email: user.email,
         avatar: user.avatar,
         bio: user.bio,
