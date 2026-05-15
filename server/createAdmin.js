@@ -10,22 +10,18 @@ const createAdmin = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('Connected to DB');
 
-    const adminExists = await User.findOne({ email: 'admin@example.com' });
-    if (adminExists) {
-      console.log('Admin already exists');
-      process.exit();
-    }
+    const admin = await User.findOneAndUpdate(
+      { email: 'admin@gmail.com' },
+      {
+        username: 'Admin User',
+        password: 'password@123',
+        role: 'admin',
+        isApproved: true
+      },
+      { upsert: true, new: true, runValidators: true }
+    );
 
-    const admin = new User({
-      username: 'Admin User',
-      email: 'admin@example.com',
-      password: 'password@123',
-      role: 'admin',
-      isApproved: true
-    });
-
-    await admin.save();
-    console.log('Admin user created: admin@example.com / password@123');
+    console.log('Admin user updated/created: admin@gmail.com / password@123');
     process.exit();
   } catch (err) {
     console.error(err);
