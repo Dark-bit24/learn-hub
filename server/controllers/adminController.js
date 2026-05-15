@@ -45,7 +45,7 @@ const approveTeacher = async (req, res) => {
 const getAllResources = async (req, res) => {
   try {
     const resources = await Resource.find({})
-      .populate('uploadedBy', 'name email')
+      .populate('uploadedBy', 'username email')
       .sort({ createdAt: -1 });
     res.json(resources);
   } catch (error) {
@@ -95,7 +95,7 @@ const deleteUser = async (req, res) => {
 // @access  Private/Admin
 const createUser = async (req, res) => {
   try {
-    const { name, email, password, role, isApproved } = req.body;
+    const { username, email, password, role, isApproved } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -103,7 +103,7 @@ const createUser = async (req, res) => {
     }
 
     const user = await User.create({
-      name,
+      username,
       email,
       password,
       role: role || 'student',
@@ -114,7 +114,7 @@ const createUser = async (req, res) => {
       message: 'User created successfully',
       user: {
         _id: user._id,
-        name: user.name,
+        username: user.username,
         email: user.email,
         role: user.role,
         isApproved: user.isApproved

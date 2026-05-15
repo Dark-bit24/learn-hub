@@ -1,8 +1,33 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
 const User = require('../models/User');
 const Resource = require('../models/Resource');
 const { protect } = require('../middleware/authMiddleware');
+
+// ============================================
+// AVATAR UPLOAD CONFIG
+// ============================================
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, `avatar-${req.user._id}-${Date.now()}${path.extname(file.originalname)}`);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB max for avatars
+  fileFilter: (req, file, cb) => {
+    const allowed = /png|jpg|jpeg/;
+    const ext = allowed.test(path.extname(file.originalname).toLowerCase());
+    if (ext) cb(null, true);
+    else cb(new Error('Only JPG, JPEG, PNG allowed'));
+  }
+});
 
 // GET /api/users/profile → get my profile
 router.get('/profile', protect, async (req, res) => {
@@ -22,18 +47,25 @@ router.get('/profile', protect, async (req, res) => {
 });
 
 // PUT /api/users/profile → update profile
-router.put('/profile', protect, async (req, res) => {
+router.put('/profile', protect, upload.single('avatar'), async (req, res) => {
   try {
-    const { name, bio } = req.body;
+    const { username, bio } = req.body;
+    const updateData = { username, bio };
+
+    // If a new avatar was uploaded
+    if (req.file) {
+      updateData.avatar = `/uploads/${req.file.filename}`;
+    }
 
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { name, bio },
+      updateData,
       { new: true }
     ).select('-password');
 
     res.json(user);
   } catch (error) {
+    console.error('Profile update error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

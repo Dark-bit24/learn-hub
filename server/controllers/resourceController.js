@@ -29,7 +29,7 @@ const getResources = async (req, res) => {
 
     // Fetch resources, populate uploader name
     const resources = await Resource.find(filter)
-      .populate('uploadedBy', 'name avatar')
+      .populate('uploadedBy', 'username avatar')
       .sort({ createdAt: -1 }); // Newest first
 
     res.json(resources);
@@ -45,7 +45,7 @@ const getResources = async (req, res) => {
 const getResourceById = async (req, res) => {
   try {
     const resource = await Resource.findById(req.params.id)
-      .populate('uploadedBy', 'name avatar email');
+      .populate('uploadedBy', 'username avatar email');
 
     if (!resource) {
       return res.status(404).json({ message: 'Resource not found' });
@@ -84,7 +84,7 @@ const createResource = async (req, res) => {
     });
 
     // Return created resource with uploader info
-    const populated = await resource.populate('uploadedBy', 'name avatar');
+    const populated = await resource.populate('uploadedBy', 'username avatar');
     res.status(201).json(populated);
 
   } catch (error) {
@@ -114,7 +114,7 @@ const updateResource = async (req, res) => {
       req.params.id,
       req.body,
       { new: true, runValidators: true }
-    ).populate('uploadedBy', 'name avatar');
+    ).populate('uploadedBy', 'username avatar');
 
     res.json(updatedResource);
   } catch (error) {
@@ -192,7 +192,7 @@ const saveResource = async (req, res) => {
 const getFeaturedResources = async (req, res) => {
   try {
     const resources = await Resource.find()
-      .populate('uploadedBy', 'name avatar')
+      .populate('uploadedBy', 'username avatar')
       .sort({ views: -1, saves: -1 })
       .limit(6);
 

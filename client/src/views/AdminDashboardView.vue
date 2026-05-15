@@ -65,9 +65,9 @@
                   <td class="px-6 py-4">
                     <div class="flex items-center gap-3">
                       <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-indigo-700 font-bold shadow-sm">
-                        {{ teacher.username.charAt(0).toUpperCase() }}
+                        {{ teacher.username?.charAt(0).toUpperCase() || '?' }}
                       </div>
-                      <div class="font-semibold text-slate-800">{{ teacher.username }}</div>
+                      <div class="font-semibold text-slate-800">{{ teacher.username || 'No Name' }}</div>
                     </div>
                   </td>
                   <td class="px-6 py-4 text-slate-500 font-medium">{{ teacher.email }}</td>
@@ -163,10 +163,10 @@
                     <div class="flex items-center gap-3">
                       <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shadow-sm"
                         :class="user.role === 'admin' ? 'bg-gradient-to-br from-purple-100 to-fuchsia-100 text-purple-700' : 'bg-gradient-to-br from-slate-100 to-gray-200 text-slate-700'">
-                        {{ user.username.charAt(0).toUpperCase() }}
+                        {{ user.username?.charAt(0).toUpperCase() || '?' }}
                       </div>
                       <div>
-                        <div class="font-semibold text-slate-800">{{ user.username }}</div>
+                        <div class="font-semibold text-slate-800">{{ user.username || 'No Name' }}</div>
                         <div class="text-xs font-medium text-slate-500">{{ user.email }}</div>
                       </div>
                     </div>
