@@ -10,11 +10,13 @@ const createAdmin = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('Connected to DB');
 
+    const hashedPassword = await bcrypt.hash('password@123', 10);
+
     const admin = await User.findOneAndUpdate(
       { email: 'admin@gmail.com' },
       {
         username: 'Admin User',
-        password: 'password@123',
+        password: hashedPassword,
         role: 'admin',
         isApproved: true
       },
