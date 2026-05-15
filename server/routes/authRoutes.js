@@ -62,14 +62,9 @@ router.post("/register", async (req, res) => {
 // --------------------------------------------
 router.post("/login", async (req, res) => {
   try {
-    console.log("BODY:", req.body);
-
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-
-    console.log("USER FOUND:", user ? "YES" : "NO");
-    if (user) console.log("STORED HASH:", user.password);
 
     if (!user) {
       return res.status(400).json({
@@ -81,8 +76,6 @@ router.post("/login", async (req, res) => {
       password,
       user.password
     );
-
-    console.log("PASSWORD MATCH:", isMatch);
 
     if (!isMatch) {
       return res.status(400).json({
