@@ -60,6 +60,9 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem('user', JSON.stringify(data.user));
         return true;
       } catch (err) {
+        console.log("FULL ERROR:", err);
+        console.log("RESPONSE:", err.response);
+        console.log("DATA:", err.response?.data);
         this.error = err.response?.data?.message || 'Login failed';
         return false;
       } finally {
