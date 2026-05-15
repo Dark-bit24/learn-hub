@@ -72,6 +72,10 @@ const createResource = async (req, res) => {
     // Get uploaded file path if exists
     const file = req.file ? `/uploads/${req.file.filename}` : '';
 
+    if (!req.user) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
     // Create resource in database
     const resource = await Resource.create({
       title,
@@ -80,7 +84,7 @@ const createResource = async (req, res) => {
       type,
       url: url || '',
       file,
-      uploadedBy: req.user._id // from auth middleware
+      uploadedBy: req.user._id
     });
 
     // Return created resource with uploader info
@@ -88,7 +92,12 @@ const createResource = async (req, res) => {
     res.status(201).json(populated);
 
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('CREATE RESOURCE ERROR:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error', 
+      error: error.message 
+    });
   }
 };
 

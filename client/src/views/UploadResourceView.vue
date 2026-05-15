@@ -115,7 +115,8 @@ const handleSubmit = async () => {
     Object.keys(form).forEach(k => form[k] = '')
     selectedFile.value = null
   } catch (err) {
-    error.value = err.response?.data?.message || 'Upload failed'
+    const backendError = err.response?.data?.error || err.response?.data?.message;
+    error.value = backendError || 'Upload failed';
   } finally {
     uploading.value = false
   }

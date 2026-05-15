@@ -81,8 +81,12 @@ app.use((req, res) => {
 
 // Handle server errors
 app.use((err, req, res, next) => {
-  console.error('Registration Error:', err);
-  res.status(500).json({ message: 'Server error', error: err.message });
+  console.error('SERVER ERROR:', err.stack);
+  res.status(500).json({ 
+    success: false,
+    message: 'Server error', 
+    error: err.message 
+  });
 });
 
 // ============================================
