@@ -6,11 +6,19 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const compression = require('compression');
 const connectDB = require('./config/db');
 
 // Load environment variables from .env file
 dotenv.config();
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('📁 Created uploads directory');
+}
 
 // Connect to MongoDB database
 connectDB();
