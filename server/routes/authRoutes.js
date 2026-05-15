@@ -93,6 +93,15 @@ router.post("/login", async (req, res) => {
       });
     }
 
+    // Check if account is approved
+    if (!user.isApproved) {
+      console.log("LOGIN FAILED: Account not approved");
+      return res.status(403).json({
+        success: false,
+        message: "Account pending admin approval. Please wait for an administrator to activate your account."
+      });
+    }
+
     // Create token
     const token = jwt.sign(
       { id: user._id },
