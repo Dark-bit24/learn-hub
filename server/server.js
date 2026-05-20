@@ -52,6 +52,12 @@ app.use(express.urlencoded({ extended: true }));
 // Make uploaded files accessible via URL with 1-day caching
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), { maxAge: '1d' }));
 
+// Fallback for missing uploaded files to prevent falling through to generic 'Route not found'
+app.use('/uploads', (req, res) => {
+  res.status(404).json({ message: 'File not found' });
+});
+
+
 // ============================================
 // ROUTES - API endpoints
 // ============================================
