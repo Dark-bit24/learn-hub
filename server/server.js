@@ -35,10 +35,17 @@ app.use(compression());
 
 // Allow frontend to communicate with backend
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://learn-hub-psi-ashen.vercel.app"
-  ],
+  origin: (origin, callback) => {
+    // Allow localhost and any vercel.app subdomain
+    if (!origin || 
+        origin === "http://localhost:5173" || 
+        origin === "https://learn-hub-psi-ashen.vercel.app" || 
+        origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
