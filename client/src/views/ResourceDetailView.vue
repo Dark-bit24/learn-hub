@@ -54,12 +54,15 @@
         <!-- File -->
         <div v-if="resource.file" class="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
           <p class="text-sm font-medium text-green-700 mb-3">📎 Attached File</p>
-          <div class="flex flex-wrap gap-3">
+          <div class="flex flex-wrap gap-3 items-center">
             <button @click="showPreview = true" class="btn-primary text-sm py-2">
               📖 Read Online
             </button>
             <a :href="`${BASE_URL}/api/resources/${resource._id}/download`"
-              class="btn-secondary text-sm py-2 inline-block">
+              class="relative inline-flex items-center justify-center px-6 py-2 text-sm font-bold text-white bg-indigo-600 rounded-xl shadow-lg hover:shadow-xl hover:bg-indigo-700 transition-all">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+              </svg>
               Download File
             </a>
           </div>
