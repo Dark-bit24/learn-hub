@@ -28,9 +28,10 @@ const storage = multer.diskStorage({
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-    // Create unique filename with timestamp
+    // Create unique filename with timestamp and sanitized name
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `${uniqueSuffix}-${file.originalname}`);
+    const sanitized = file.originalname.replace(/\s+/g, '-');
+    cb(null, `${uniqueSuffix}-${sanitized}`);
   }
 });
 
@@ -58,11 +59,11 @@ router.get('/featured', getFeaturedResources);
 // GET /api/resources → get all resources
 router.get('/', getResources);
 
-// GET /api/resources/:id → get single resource
-router.get('/:id', getResourceById);
-
 // GET /api/resources/:id/download → download file
 router.get('/:id/download', downloadResource);
+
+// GET /api/resources/:id → get single resource
+router.get('/:id', getResourceById);
 
 // POST /api/resources → create resource (protected)
 router.post('/', protect, upload.single('file'), createResource);

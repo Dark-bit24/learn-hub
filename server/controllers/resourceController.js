@@ -223,14 +223,17 @@ const downloadResource = async (req, res) => {
       return res.status(404).json({ message: 'File not found' });
     }
 
-    // Resolve absolute path to the file
-    // resource.file starts with /uploads/
-    const filePath = path.join(__dirname, '..', resource.file);
+    // Resolve absolute path to the file cleanly and robustly
+    const cleanRelativePath = resource.file.startsWith('/') ? resource.file.slice(1) : resource.file;
+    const filePath = path.resolve(__dirname, '..', cleanRelativePath);
     
     // Send file for download
     res.download(filePath, (err) => {
       if (err) {
-        res.status(500).json({ message: 'Could not download the file', error: err.message });
+        // Prevent setting headers if they have already been sent
+        if (!res.headersSent) {
+          res.status(500).json({ message: 'Could not download the file', error: err.message });
+        }
       }
     });
   } catch (error) {

@@ -11,7 +11,12 @@ const { protect } = require('../middleware/authMiddleware');
 // ============================================
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    const uploadPath = path.join(__dirname, '..', 'uploads');
+    const fs = require('fs');
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     cb(null, `avatar-${req.user._id}-${Date.now()}${path.extname(file.originalname)}`);
