@@ -24,19 +24,30 @@ const extractTextFromFile = async (filePath) => {
     // 1. Text file
     if (ext === '.txt') {
       const text = await fs.promises.readFile(absolutePath, 'utf8');
-      return text;
+      return text.substring(0, 60000);
     }
 
-    // 2. PDF file
+    // 2. PDF file — pdf-parse exports a function, NOT a class
     if (ext === '.pdf') {
-      const dataBuffer = await fs.promises.readFile(absolutePath);
-      const { PDFParse } = require('pdf-parse');
-      const parser = new PDFParse(new Uint8Array(dataBuffer));
-      const data = await parser.getText();
-      return data.text || data || '';
+      try {
+        const dataBuffer = await fs.promises.readFile(absolutePath);
+        const data = await pdfParse(dataBuffer);
+        const text = (data.text || '').trim();
+        console.log(`[TextExtractor] PDF extracted ${text.length} chars from ${path.basename(absolutePath)}`);
+        return text.substring(0, 60000);
+      } catch (pdfErr) {
+        console.error('[TextExtractor] PDF parse error:', pdfErr.message);
+        return '';
+      }
     }
 
-    // 3. Fallback for other file types (images, word files, etc.)
+    // 3. Markdown / code files treated as plain text
+    if (['.md', '.json', '.csv', '.js', '.ts', '.py', '.html'].includes(ext)) {
+      const text = await fs.promises.readFile(absolutePath, 'utf8');
+      return text.substring(0, 60000);
+    }
+
+    // 4. Fallback for other file types (images, word files, etc.)
     console.log(`[TextExtractor] Unsupported local file format: ${ext}. Skipping text extraction.`);
     return '';
   } catch (error) {

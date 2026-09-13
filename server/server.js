@@ -39,10 +39,10 @@ app.use(compression());
 // Security HTTP headers
 app.use(helmet());
 
-// Basic rate limiting: max 100 requests per 15 minutes per IP
+// Basic rate limiting: max 300 requests per 15 minutes per IP
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 300,
   message: { message: 'Too many requests, please try again later.' }
 });
 app.use(limiter);
@@ -50,19 +50,22 @@ app.use(limiter);
 // Allow frontend to communicate with backend
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow localhost and any vercel.app subdomain
-    if (!origin || 
-        origin === "http://localhost:5173" || 
-        origin === "https://learn-hub-psi-ashen.vercel.app" || 
-        origin.endsWith('.vercel.app')) {
+    const allowed = [
+      'http://localhost:5173',
+      'http://localhost:5000',
+      'http://localhost:3000',
+      'https://learn-hub-psi-ashen.vercel.app',
+      'https://learn-hub-x0ol.onrender.com'
+    ];
+    if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app') || origin.endsWith('.onrender.com')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-guest-id']
 }));
 
 // Allow server to read JSON data from requests

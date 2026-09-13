@@ -193,7 +193,9 @@ Respond strictly with valid JSON in this format:
     throw new Error('Empty response from Gemini');
   }
 
-  const parsed = JSON.parse(text);
+  // Strip markdown code fences that Gemini sometimes wraps JSON in
+  const cleanText = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+  const parsed = JSON.parse(cleanText);
   return {
     shortDescription: parsed.shortDescription || '',
     keyTopics: Array.isArray(parsed.keyTopics) ? parsed.keyTopics : []
