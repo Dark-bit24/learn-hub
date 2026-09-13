@@ -42,18 +42,13 @@
       <!-- Form -->
       <form @submit.prevent="handleLogin" class="space-y-4">
         <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Official Email</label>
-          <input v-model="form.email" type="email" placeholder="you@institution.edu or admin@gmail.com"
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Address</label>
+          <input v-model="form.email" type="email" placeholder="you@example.com"
             class="w-full bg-slate-50 border border-slate-200 focus:border-[#0063cf] focus:bg-white rounded-xl px-3.5 py-2.5 text-xs text-slate-900 transition-all outline-none" required />
         </div>
 
         <div>
-          <div class="flex items-center justify-between mb-1.5">
-            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Password</label>
-            <button type="button" @click="fillAdminCreds" class="text-[11px] font-semibold text-[#0063cf] hover:underline">
-              Fill Admin Creds
-            </button>
-          </div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Password</label>
           <input v-model="form.password" type="password" placeholder="••••••••"
             class="w-full bg-slate-50 border border-slate-200 focus:border-[#0063cf] focus:bg-white rounded-xl px-3.5 py-2.5 text-xs text-slate-900 transition-all outline-none" required />
         </div>
@@ -63,12 +58,6 @@
           {{ authStore.loading ? 'Authenticating...' : 'Sign In to Portal' }}
         </button>
       </form>
-
-      <!-- Institutional Quick Info -->
-      <div class="mt-5 p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 flex items-center justify-between">
-        <span>Institutional Administrator:</span>
-        <span class="font-mono font-bold text-[#0063cf]">admin@gmail.com</span>
-      </div>
 
       <!-- Register link -->
       <p class="text-center text-xs text-slate-500 mt-6">
@@ -90,11 +79,6 @@ const authStore = useAuthStore()
 const router = useRouter()
 
 const form = reactive({ email: '', password: '' })
-
-const fillAdminCreds = () => {
-  form.email = 'admin@gmail.com'
-  form.password = 'password@123'
-}
 
 const onGoogleError = (errMsg) => {
   authStore.error = errMsg
