@@ -90,22 +90,73 @@
               Register Account
             </RouterLink>
           </template>
+
+          <!-- Mobile Menu Hamburger Button -->
+          <button 
+            @click="mobileMenuOpen = !mobileMenuOpen"
+            class="md:hidden p-2 text-slate-600 hover:text-[#0063cf] hover:bg-slate-100 rounded-lg transition-colors"
+            title="Toggle Menu"
+          >
+            <svg v-if="!mobileMenuOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
         </div>
 
       </div>
+    </div>
+
+    <!-- Mobile Navigation Drawer -->
+    <div v-if="mobileMenuOpen" class="md:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-2 shadow-lg">
+      <RouterLink 
+        to="/" 
+        @click="mobileMenuOpen = false"
+        class="block px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-[#0063cf] hover:bg-blue-50 transition-colors"
+        active-class="!text-[#0063cf] !bg-blue-50 font-bold"
+      >
+        Home
+      </RouterLink>
+      <RouterLink 
+        to="/resources" 
+        @click="mobileMenuOpen = false"
+        class="block px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-[#0063cf] hover:bg-blue-50 transition-colors"
+        active-class="!text-[#0063cf] !bg-blue-50 font-bold"
+      >
+        All Services & Resources
+      </RouterLink>
+      <RouterLink 
+        v-if="authStore.isLoggedIn" 
+        to="/upload" 
+        @click="mobileMenuOpen = false"
+        class="block px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-[#0063cf] hover:bg-blue-50 transition-colors"
+        active-class="!text-[#0063cf] !bg-blue-50 font-bold"
+      >
+        Upload Document
+      </RouterLink>
+      <RouterLink 
+        v-if="authStore.isAdmin" 
+        to="/admin" 
+        @click="mobileMenuOpen = false"
+        class="block px-3 py-2 rounded-lg text-sm font-bold text-[#0063cf] bg-blue-50 border border-blue-200 transition-colors flex items-center justify-between"
+      >
+        <span>Admin Workspace</span>
+        <span class="text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded bg-[#0063cf] text-white">Admin</span>
+      </RouterLink>
     </div>
   </header>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useAuthStore } from '../stores/authStore'
 import { useRouter } from 'vue-router'
 
 const authStore = useAuthStore()
 const router = useRouter()
+const mobileMenuOpen = ref(false)
 
 const handleLogout = () => {
   authStore.logout()
+  mobileMenuOpen.value = false
   router.push('/')
 }
 </script>

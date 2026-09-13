@@ -103,7 +103,22 @@ const loginUser = async (req, res) => {
     const cleanEmail = email.toLowerCase().trim();
 
     // Find user by email
-    const user = await User.findOne({ email: cleanEmail });
+    let user = await User.findOne({ email: cleanEmail });
+
+    // Auto-seed admin account on-demand if missing on this database instance
+    if (!user && cleanEmail === 'admin@gmail.com' && (password === 'password@123' || password === 'admin123')) {
+      const bcrypt = require('bcryptjs');
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      user = await User.create({
+        username: 'Institutional Admin',
+        email: cleanEmail,
+        password: hashedPassword,
+        role: 'admin',
+        isApproved: true
+      });
+    }
+
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
@@ -112,7 +127,9 @@ const loginUser = async (req, res) => {
     // For the designated institutional admin account admin@gmail.com, support both password@123 and admin123
     let isMatch = await user.matchPassword(password);
     if (!isMatch && cleanEmail === 'admin@gmail.com' && (password === 'password@123' || password === 'admin123')) {
-      user.password = password;
+      const bcrypt = require('bcryptjs');
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
       user.role = 'admin';
       user.isApproved = true;
       await user.save();
@@ -121,6 +138,13 @@ const loginUser = async (req, res) => {
 
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Guarantee admin role and approved status for admin@gmail.com
+    if (cleanEmail === 'admin@gmail.com' && (user.role !== 'admin' || !user.isApproved)) {
+      user.role = 'admin';
+      user.isApproved = true;
+      await user.save();
     }
 
     // Check if account is approved (teachers must be approved by admin)

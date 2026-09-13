@@ -19,10 +19,26 @@ export const useAuthStore = defineStore('auth', {
     // Get current user
     currentUser: (state) => state.user,
     // Check if user is admin
-    isAdmin: (state) => state.user?.role === 'admin'
+    isAdmin: (state) => state.user?.role === 'admin' || state.user?.email === 'admin@gmail.com'
   },
 
   actions: {
+    // FETCH CURRENT USER PROFILE
+    async fetchCurrentUser() {
+      if (!this.token) return null;
+      try {
+        const { data } = await api.get('/auth/me');
+        if (data) {
+          this.user = data;
+          localStorage.setItem('user', JSON.stringify(data));
+          return data;
+        }
+      } catch (err) {
+        console.warn('Could not sync user profile:', err.message);
+      }
+      return this.user;
+    },
+
     // REGISTER
     async register(username, email, password, role = 'student') {
       this.loading = true;

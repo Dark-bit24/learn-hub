@@ -387,6 +387,62 @@ const downloadResource = async (req, res) => {
     });
   } catch (error) {
     console.error('Download Resource Error:', error);
+// ============================================
+// VIEW / STREAM RESOURCE INLINE
+// GET /api/resources/:id/view
+// ============================================
+const viewResource = async (req, res) => {
+  try {
+    const resource = await Resource.findById(req.params.id);
+
+    if (!resource || !resource.file) {
+      return res.status(404).json({ message: 'No file associated with this resource' });
+    }
+
+    const cleanRelativePath = resource.file.startsWith('/') ? resource.file.slice(1) : resource.file;
+    const filePath = path.resolve(__dirname, '..', cleanRelativePath);
+
+    const fs = require('fs');
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: 'The requested file could not be found on the server' });
+    }
+
+    const ext = path.extname(cleanRelativePath).toLowerCase();
+    const mimeTypes = {
+      '.pdf': 'application/pdf',
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.webp': 'image/webp',
+      '.gif': 'image/gif',
+      '.txt': 'text/plain',
+      '.html': 'text/html'
+    };
+
+    const contentType = mimeTypes[ext] || 'application/octet-stream';
+    const cleanBaseName = (resource.title || 'document')
+      .replace(/[^a-zA-Z0-9_\-\s]/g, '')
+      .trim()
+      .replace(/\s+/g, '_');
+    const downloadFilename = `${cleanBaseName}${ext}`;
+
+    // Set headers that permit iframe embedding across origins
+    res.removeHeader('X-Frame-Options');
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `inline; filename="${downloadFilename}"`);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+    res.setHeader('Content-Security-Policy', "frame-ancestors *");
+
+    // Increment view count
+    resource.views = (resource.views || 0) + 1;
+    await resource.save();
+
+    const stream = fs.createReadStream(filePath);
+    stream.pipe(res);
+  } catch (error) {
+    console.error('View Resource Error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
@@ -399,5 +455,6 @@ module.exports = {
   deleteResource,
   saveResource,
   getFeaturedResources,
-  downloadResource
+  downloadResource,
+  viewResource
 };

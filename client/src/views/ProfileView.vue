@@ -10,12 +10,18 @@
           </h1>
           <p class="text-slate-500 font-medium">{{ currentDate }} — Here's what's happening today.</p>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3 flex-wrap">
+          <RouterLink v-if="authStore.isAdmin" to="/admin" class="flex items-center gap-2 px-5 py-2.5 bg-[#0063cf] text-white rounded-xl shadow-md hover:bg-[#0051ab] transition-all font-bold text-sm">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            Admin Workspace
+          </RouterLink>
           <button @click="showEditModal = true" class="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md hover:border-blue-400 transition-all font-bold text-slate-700 text-sm">
             <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
             Edit Profile
           </button>
-          <RouterLink to="/upload" class="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all font-bold text-sm">
+          <RouterLink to="/upload" class="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl shadow-sm hover:bg-slate-800 transition-all font-bold text-sm">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             New Upload
           </RouterLink>

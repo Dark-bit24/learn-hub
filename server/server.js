@@ -36,8 +36,12 @@ const app = express();
 // Enable Gzip compression
 app.use(compression());
 
-// Security HTTP headers
-app.use(helmet());
+// Security HTTP headers — disable frameguard so uploaded files can be
+// embedded in iframes from the frontend (cross-origin PDF preview)
+app.use(helmet({
+  frameguard: false,           // Remove X-Frame-Options so iframes work
+  contentSecurityPolicy: false // Disable CSP (we set it per-route below)
+}));
 
 // Basic rate limiting: max 300 requests per 15 minutes per IP
 const limiter = rateLimit({
@@ -74,8 +78,16 @@ app.use(express.json());
 // Allow server to read form data
 app.use(express.urlencoded({ extended: true }));
 
-// Make uploaded files accessible via URL with 1-day caching
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'), { maxAge: '1d' }));
+// Serve uploaded files — add permissive headers so PDFs/images can be
+// embedded in iframes from any origin (fixes "refused to connect" in preview)
+app.use('/uploads', (req, res, next) => {
+  res.removeHeader('X-Frame-Options');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+  res.setHeader('Content-Security-Policy', "frame-ancestors *");
+  next();
+}, express.static(path.join(__dirname, 'uploads'), { maxAge: '1d' }));
 
 // Fallback for missing uploaded files to prevent falling through to generic 'Route not found'
 app.use('/uploads', (req, res) => {

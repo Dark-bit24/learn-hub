@@ -33,7 +33,7 @@ const router = createRouter({
 });
 
 // Route guard - redirect to login if not authenticated
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   
   // Check auth
@@ -42,8 +42,16 @@ router.beforeEach((to, from, next) => {
   }
 
   // Check admin
-  if (to.meta.requiresAdmin && !authStore.isAdmin) {
-    return next('/');
+  if (to.meta.requiresAdmin) {
+    if (!authStore.isLoggedIn) {
+      return next('/login');
+    }
+    if (!authStore.isAdmin) {
+      await authStore.fetchCurrentUser();
+    }
+    if (!authStore.isAdmin) {
+      return next('/');
+    }
   }
 
   next();

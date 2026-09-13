@@ -27,6 +27,9 @@ const protect = async (req, res, next) => {
 
     // Get user from database and attach to request
     req.user = await User.findById(decoded.id).select('-password');
+    if (!req.user) {
+      return res.status(401).json({ message: 'User not found, please sign in again' });
+    }
 
     // Continue to the next middleware/route
     next();

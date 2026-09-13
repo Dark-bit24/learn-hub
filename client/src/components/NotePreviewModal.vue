@@ -18,9 +18,26 @@
           </div>
         </div>
         <div class="flex items-center gap-2">
+          <!-- Open in New Tab Button (Guaranteed to work in all browsers) -->
+          <a :href="directViewUrl" target="_blank" rel="noopener noreferrer"
+            class="h-10 px-3 flex items-center justify-center gap-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700/50 text-slate-300 hover:text-white transition-all text-xs font-semibold"
+            title="Open document in a new browser tab">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+            <span class="hidden sm:inline">New Tab</span>
+          </a>
+
+          <!-- Google Viewer Toggle (if PDF) -->
+          <button v-if="isPdf" @click="useGoogleViewer = !useGoogleViewer"
+            class="h-10 px-3 flex items-center justify-center gap-1.5 rounded-xl border transition-all text-xs font-semibold"
+            :class="useGoogleViewer ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300' : 'bg-slate-800 hover:bg-slate-700 border-slate-700/50 text-slate-300 hover:text-white'"
+            :title="useGoogleViewer ? 'Switching to Google Docs Viewer' : 'Use Google Docs Viewer if native preview is blocked'">
+            <span class="hidden sm:inline">{{ useGoogleViewer ? 'Standard Viewer' : 'Google Viewer' }}</span>
+            <span class="sm:hidden">G-View</span>
+          </button>
+
           <!-- Toggle AI Tutor Sidebar Button (available to all visitors) -->
           <button @click="showTutorSidebar = !showTutorSidebar" 
-            class="h-10 px-4 flex items-center justify-center gap-2 rounded-xl border transition-all text-xs font-bold"
+            class="h-10 px-3.5 flex items-center justify-center gap-2 rounded-xl border transition-all text-xs font-bold"
             :class="showTutorSidebar ? 'bg-blue-600/20 border-blue-500/50 text-blue-400 hover:bg-blue-600/30' : 'bg-slate-800 border-slate-700/50 text-slate-300 hover:text-white hover:bg-slate-700'">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1-3-3v-2a3 3 0 0 1 3-3h1V6a4 4 0 0 1 4-4z"/>
@@ -28,7 +45,7 @@
               <circle cx="14.5" cy="10" r="1" fill="currentColor" stroke="none"/>
               <path d="M9.5 14.5c.83.83 2.17 1.5 2.5 1.5s1.67-.67 2.5-1.5"/>
             </svg>
-            <span>{{ showTutorSidebar ? 'Hide AI Tutor' : 'Ask AI Tutor' }}</span>
+            <span class="hidden sm:inline">{{ showTutorSidebar ? 'Hide AI Tutor' : 'Ask AI Tutor' }}</span>
           </button>
 
           <!-- Fullscreen Toggle Button -->
@@ -54,18 +71,21 @@
       <div class="flex-1 flex flex-col lg:flex-row overflow-hidden bg-slate-950">
         
         <!-- Left Side: File Viewer -->
-        <div class="flex-1 h-full overflow-hidden p-4 sm:p-6 flex items-center justify-center relative">
-          <!-- PDF Viewer -->
-          <iframe v-if="isPdf" 
-            :src="`${BASE_URL}${fileUrl}`" 
-            class="w-full h-full rounded-xl shadow-2xl border border-slate-800 bg-white"
-            frameborder="0">
-          </iframe>
+        <div class="flex-1 h-full overflow-hidden p-3 sm:p-5 flex flex-col items-center justify-center relative">
+          <!-- PDF Viewer (supports direct stream + Google Docs Viewer fallback) -->
+          <div v-if="isPdf" class="w-full h-full flex flex-col">
+            <iframe 
+              :src="currentViewerUrl" 
+              class="w-full h-full rounded-xl shadow-2xl border border-slate-800 bg-white"
+              frameborder="0"
+              allowfullscreen>
+            </iframe>
+          </div>
 
           <!-- Image Viewer -->
           <div v-else-if="isImage" class="w-full h-full flex items-center justify-center p-2">
             <img 
-              :src="`${BASE_URL}${fileUrl}`" 
+              :src="directViewUrl" 
               class="max-w-full max-h-full object-contain rounded-xl shadow-2xl border border-slate-800/50 bg-slate-900" 
               alt="Note preview" />
           </div>
@@ -88,14 +108,22 @@
       </div>
 
       <!-- Modal Footer -->
-      <div class="px-6 py-4 border-t border-slate-800 bg-slate-900/90 backdrop-blur-md flex justify-end items-center gap-3 relative z-10">
-        <button @click="$emit('close')" class="px-5 py-2.5 rounded-xl font-bold text-sm text-slate-400 bg-slate-800 hover:bg-slate-700 hover:text-white transition-colors">Close</button>
-        <a :href="`${BASE_URL}/api/resources/${resourceId}/download`" class="relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-bold text-white bg-indigo-600 rounded-xl shadow-lg hover:shadow-xl hover:bg-indigo-700 transition-all">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-          </svg>
-          Download Document
-        </a>
+      <div class="px-6 py-4 border-t border-slate-800 bg-slate-900/90 backdrop-blur-md flex justify-between items-center gap-3 relative z-10">
+        <div class="text-xs text-slate-400 flex items-center gap-2">
+          <span>Having trouble viewing?</span>
+          <a :href="directViewUrl" target="_blank" class="text-indigo-400 hover:text-indigo-300 font-semibold underline">
+            Open in new tab
+          </a>
+        </div>
+        <div class="flex items-center gap-3">
+          <button @click="$emit('close')" class="px-5 py-2.5 rounded-xl font-bold text-sm text-slate-400 bg-slate-800 hover:bg-slate-700 hover:text-white transition-colors">Close</button>
+          <a :href="`${BASE_URL}/api/resources/${resourceId}/download`" class="relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-bold text-white bg-indigo-600 rounded-xl shadow-lg hover:shadow-xl hover:bg-indigo-700 transition-all">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            Download Document
+          </a>
+        </div>
       </div>
     </div>
   </transition>
@@ -119,6 +147,22 @@ const emit = defineEmits(['close'])
 
 const authStore = useAuthStore()
 const showTutorSidebar = ref(true)
+const useGoogleViewer = ref(false)
+
+const directViewUrl = computed(() => {
+  if (props.resourceId) {
+    return `${BASE_URL}/api/resources/${props.resourceId}/view`
+  }
+  const clean = props.fileUrl?.startsWith('/') ? props.fileUrl : `/${props.fileUrl || ''}`
+  return `${BASE_URL}${clean}`
+})
+
+const currentViewerUrl = computed(() => {
+  if (useGoogleViewer.value) {
+    return `https://docs.google.com/viewer?url=${encodeURIComponent(directViewUrl.value)}&embedded=true`
+  }
+  return directViewUrl.value
+})
 
 const isPdf = computed(() => props.fileUrl?.toLowerCase().endsWith('.pdf'))
 const isImage = computed(() => {

@@ -10,7 +10,8 @@ const {
   deleteResource,
   saveResource,
   getFeaturedResources,
-  downloadResource
+  downloadResource,
+  viewResource
 } = require('../controllers/resourceController');
 const { protect, optionalProtect } = require('../middleware/authMiddleware');
 
@@ -61,6 +62,9 @@ router.get('/', getResources);
 
 // GET /api/resources/:id/download → download file
 router.get('/:id/download', downloadResource);
+
+// GET /api/resources/:id/view → stream file inline for preview (public)
+router.get('/:id/view', viewResource);
 
 // GET /api/resources/:id → get single resource
 router.get('/:id', getResourceById);

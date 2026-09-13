@@ -29,6 +29,23 @@
         </div>
       </div>
 
+      <!-- Error Notice -->
+      <div v-if="loadError" class="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-center justify-between text-xs text-rose-700 font-medium">
+        <div class="flex items-center gap-2">
+          <span>⚠️</span>
+          <span>{{ loadError }}</span>
+        </div>
+        <button @click="fetchData" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition-colors">
+          Retry
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="loading" class="text-center py-4 text-xs text-slate-500 font-semibold flex items-center justify-center gap-2">
+        <span class="w-3 h-3 border-2 border-[#0063cf] border-t-transparent rounded-full animate-spin"></span>
+        Syncing official records...
+      </div>
+
       <!-- Quick Metrics Summary -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex items-center gap-4">
@@ -431,18 +448,53 @@ const handleFileChange = (e) => {
 const showPreview = ref(false)
 const selectedResource = ref(null)
 
+const loadError = ref('')
+
 const fetchData = async () => {
+  loading.value = true
+  loadError.value = ''
   try {
-    const [teachersRes, resourcesRes, usersRes] = await Promise.all([
+    // If not marked as admin locally, sync with backend
+    if (!authStore.isAdmin) {
+      await authStore.fetchCurrentUser()
+    }
+
+    const results = await Promise.allSettled([
       api.get('/admin/pending-teachers'),
       api.get('/admin/resources'),
       api.get('/admin/users')
     ])
-    pendingTeachers.value = teachersRes.data
-    allResources.value = resourcesRes.data
-    allUsers.value = usersRes.data
+
+    const [teachersRes, resourcesRes, usersRes] = results
+
+    if (teachersRes.status === 'fulfilled') {
+      pendingTeachers.value = teachersRes.value.data || []
+    } else {
+      console.warn('Pending teachers fetch warning:', teachersRes.reason?.message)
+    }
+
+    if (resourcesRes.status === 'fulfilled') {
+      allResources.value = resourcesRes.value.data || []
+    } else {
+      console.warn('Resources fetch warning:', resourcesRes.reason?.message)
+    }
+
+    if (usersRes.status === 'fulfilled') {
+      allUsers.value = usersRes.value.data || []
+    } else {
+      console.warn('Users fetch warning:', usersRes.reason?.message)
+    }
+
+    // If all requests were rejected, check for authorization failure
+    if (teachersRes.status === 'rejected' && resourcesRes.status === 'rejected' && usersRes.status === 'rejected') {
+      const errReason = teachersRes.reason?.response?.data?.message || 'Access denied. Please confirm your administrator credentials.'
+      loadError.value = errReason
+    }
   } catch (err) {
     console.error('Failed to fetch admin data', err)
+    loadError.value = err.response?.data?.message || 'Failed to connect to administrative workspace services.'
+  } finally {
+    loading.value = false
   }
 }
 
