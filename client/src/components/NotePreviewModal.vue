@@ -18,6 +18,14 @@
           </div>
         </div>
         <div class="flex items-center gap-2">
+          <!-- Toggle AI Tutor Sidebar Button -->
+          <button v-if="authStore.isLoggedIn" @click="showTutorSidebar = !showTutorSidebar" 
+            class="h-10 px-4 flex items-center justify-center gap-2 rounded-xl border transition-all text-xs font-bold"
+            :class="showTutorSidebar ? 'bg-blue-600/20 border-blue-500/50 text-blue-400 hover:bg-blue-600/30' : 'bg-slate-800 border-slate-700/50 text-slate-300 hover:text-white hover:bg-slate-700'">
+            <span>🤖</span>
+            <span>{{ showTutorSidebar ? 'Hide AI Tutor' : 'Ask AI Tutor' }}</span>
+          </button>
+
           <!-- Fullscreen Toggle Button -->
           <button @click="toggleFullscreen" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700/50 text-slate-300 hover:text-white transition-all" :title="isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'">
             <svg v-if="isFullscreen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -27,6 +35,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4"></path>
             </svg>
           </button>
+          
           <!-- Close Button -->
           <button @click="$emit('close')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700/50 text-slate-300 hover:text-white transition-all" title="Close Preview">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,31 +45,40 @@
         </div>
       </div>
 
-      <!-- Modal Content -->
-      <div class="flex-1 bg-slate-950 overflow-hidden p-4 sm:p-6 flex items-center justify-center relative">
-        <!-- PDF Viewer -->
-        <iframe v-if="isPdf" 
-          :src="`${BASE_URL}${fileUrl}`" 
-          class="w-full h-full rounded-xl shadow-2xl border border-slate-800 bg-white"
-          frameborder="0">
-        </iframe>
-
-        <!-- Image Viewer -->
-        <div v-else-if="isImage" class="w-full h-full flex items-center justify-center p-2">
-          <img 
+      <!-- Modal Content Area (Side-by-Side Flex Layout) -->
+      <div class="flex-1 flex flex-col lg:flex-row overflow-hidden bg-slate-950">
+        
+        <!-- Left Side: File Viewer -->
+        <div class="flex-1 h-full overflow-hidden p-4 sm:p-6 flex items-center justify-center relative">
+          <!-- PDF Viewer -->
+          <iframe v-if="isPdf" 
             :src="`${BASE_URL}${fileUrl}`" 
-            class="max-w-full max-h-full object-contain rounded-xl shadow-2xl border border-slate-800/50 bg-slate-900" 
-            alt="Note preview" />
+            class="w-full h-full rounded-xl shadow-2xl border border-slate-800 bg-white"
+            frameborder="0">
+          </iframe>
+
+          <!-- Image Viewer -->
+          <div v-else-if="isImage" class="w-full h-full flex items-center justify-center p-2">
+            <img 
+              :src="`${BASE_URL}${fileUrl}`" 
+              class="max-w-full max-h-full object-contain rounded-xl shadow-2xl border border-slate-800/50 bg-slate-900" 
+              alt="Note preview" />
+          </div>
+
+          <!-- Fallback -->
+          <div v-else class="text-center p-8 bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-800 shadow-xl max-w-sm">
+            <div class="text-6xl mb-4">📄</div>
+            <h4 class="text-lg font-bold text-slate-200 mb-2">No Preview Available</h4>
+            <p class="text-sm text-slate-400 mb-6">Preview is not supported for this file type. You can download the file to view it locally.</p>
+            <a :href="`${BASE_URL}/api/resources/${resourceId}/download`" class="inline-flex items-center justify-center px-6 py-3 text-sm font-bold text-white bg-indigo-600 rounded-xl shadow-lg hover:shadow-xl hover:bg-indigo-700 transition-all">
+              Download File
+            </a>
+          </div>
         </div>
 
-        <!-- Fallback -->
-        <div v-else class="text-center p-8 bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-800 shadow-xl max-w-sm">
-          <div class="text-6xl mb-4">📄</div>
-          <h4 class="text-lg font-bold text-slate-200 mb-2">No Preview Available</h4>
-          <p class="text-sm text-slate-400 mb-6">Preview is not supported for this file type. You can download the file to view it locally.</p>
-          <a :href="`${BASE_URL}/api/resources/${resourceId}/download`" class="inline-flex items-center justify-center px-6 py-3 text-sm font-bold text-white bg-indigo-600 rounded-xl shadow-lg hover:shadow-xl hover:bg-indigo-700 transition-all">
-            Download File
-          </a>
+        <!-- Right Side: AI Tutor sidebar panel -->
+        <div v-if="showTutorSidebar && authStore.isLoggedIn" class="w-full lg:w-[400px] h-full shrink-0 border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col bg-slate-900">
+          <AITutorPanel :resourceId="resourceId" />
         </div>
       </div>
 
@@ -81,6 +99,8 @@
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { BASE_URL } from '../services/api'
+import { useAuthStore } from '../stores/authStore'
+import AITutorPanel from './AITutorPanel.vue'
 
 const props = defineProps({
   isOpen: Boolean,
@@ -91,6 +111,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close'])
+
+const authStore = useAuthStore()
+const showTutorSidebar = ref(true)
 
 const isPdf = computed(() => props.fileUrl?.toLowerCase().endsWith('.pdf'))
 const isImage = computed(() => {
@@ -164,7 +187,6 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('fullscreenchange', handleFullscreenChange)
   window.removeEventListener('keydown', handleKeyDown)
-  // Ensure we don't leave the browser in fullscreen if component unmounts
   if (document.fullscreenElement) {
     exitFullscreen()
   }
@@ -181,4 +203,3 @@ onUnmounted(() => {
   opacity: 0;
 }
 </style>
-

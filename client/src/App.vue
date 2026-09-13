@@ -5,6 +5,7 @@
       <RouterView />
     </main>
     <Footer />
+    <GlobalAIAssistant />
   </div>
 </template>
 
@@ -12,6 +13,7 @@
 import { onMounted } from 'vue'
 import NavBar from './components/NavBar.vue'
 import Footer from './components/Footer.vue'
+import GlobalAIAssistant from './components/GlobalAIAssistant.vue'
 import API from "./api";
 
 onMounted(async () => {

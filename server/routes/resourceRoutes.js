@@ -69,7 +69,7 @@ router.get('/:id', getResourceById);
 router.post('/', protect, upload.single('file'), createResource);
 
 // PUT /api/resources/:id → update resource (protected)
-router.put('/:id', protect, updateResource);
+router.put('/:id', protect, upload.single('file'), updateResource);
 
 // DELETE /api/resources/:id → delete resource (protected)
 router.delete('/:id', protect, deleteResource);

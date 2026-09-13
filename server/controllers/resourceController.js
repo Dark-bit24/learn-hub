@@ -5,6 +5,8 @@
 const Resource = require('../models/Resource');
 const User = require('../models/User');
 const path = require('path');
+const { extractResourceContent } = require('../utils/textExtractor');
+const { validateMeaningfulDescription, analyzeAndBreakdownResource } = require('../utils/contentAnalyzer');
 
 // ============================================
 // GET ALL RESOURCES (with filters)
@@ -76,6 +78,15 @@ const createResource = async (req, res) => {
       return res.status(401).json({ message: 'User not authenticated' });
     }
 
+    // Validate meaningful description provided by the user
+    const validation = validateMeaningfulDescription(description);
+    if (!validation.valid) {
+      return res.status(400).json({
+        success: false,
+        message: validation.reason
+      });
+    }
+
     // Create resource in database
     const resource = await Resource.create({
       title,
@@ -86,6 +97,23 @@ const createResource = async (req, res) => {
       file,
       uploadedBy: req.user._id
     });
+
+    // Extract text content from file/url and save
+    const content = await extractResourceContent(resource);
+    resource.content = content;
+
+    // Analyze content and generate verified breakdown / short description
+    const breakdown = await analyzeAndBreakdownResource({
+      title: resource.title,
+      subject: resource.subject,
+      type: resource.type,
+      content: resource.content,
+      description: resource.description
+    });
+    resource.shortDescription = breakdown.shortDescription;
+    resource.keyTopics = breakdown.keyTopics;
+
+    await resource.save();
 
     // Return created resource with uploader info
     const populated = await resource.populate('uploadedBy', 'username avatar');
@@ -118,14 +146,72 @@ const updateResource = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to edit this resource' });
     }
 
-    // Update the resource
-    const updatedResource = await Resource.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    ).populate('uploadedBy', 'username avatar');
+    // If description is being updated, validate it is meaningful
+    if (req.body.description !== undefined) {
+      const validation = validateMeaningfulDescription(req.body.description);
+      if (!validation.valid) {
+        return res.status(400).json({ success: false, message: validation.reason });
+      }
+    }
 
-    res.json(updatedResource);
+    // Update text fields
+    const fields = ['title', 'description', 'subject', 'type', 'url'];
+    fields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        resource[field] = req.body[field];
+      }
+    });
+
+    // Handle file update
+    if (req.file) {
+      // Delete old file if it exists
+      if (resource.file) {
+        const fs = require('fs');
+        const oldFilePath = path.join(__dirname, '..', resource.file.startsWith('/') ? resource.file.slice(1) : resource.file);
+        if (fs.existsSync(oldFilePath)) {
+          try {
+            fs.unlinkSync(oldFilePath);
+          } catch (err) {
+            console.error('Failed to delete old file:', err);
+          }
+        }
+      }
+      resource.file = `/uploads/${req.file.filename}`;
+    } else if (req.body.removeFile === 'true') {
+      // Delete file if user requested removal
+      if (resource.file) {
+        const fs = require('fs');
+        const oldFilePath = path.join(__dirname, '..', resource.file.startsWith('/') ? resource.file.slice(1) : resource.file);
+        if (fs.existsSync(oldFilePath)) {
+          try {
+            fs.unlinkSync(oldFilePath);
+          } catch (err) {
+            console.error('Failed to delete file:', err);
+          }
+        }
+      }
+      resource.file = '';
+    }
+
+    // Run text extractor to update content
+    const content = await extractResourceContent(resource);
+    resource.content = content;
+
+    // Refresh breakdown and short description
+    const breakdown = await analyzeAndBreakdownResource({
+      title: resource.title,
+      subject: resource.subject,
+      type: resource.type,
+      content: resource.content,
+      description: resource.description
+    });
+    resource.shortDescription = breakdown.shortDescription;
+    resource.keyTopics = breakdown.keyTopics;
+
+    await resource.save();
+
+    const populated = await resource.populate('uploadedBy', 'username avatar');
+    res.json(populated);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

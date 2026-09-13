@@ -8,6 +8,8 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const compression = require('compression');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 
 // Load environment variables from .env file
@@ -31,7 +33,19 @@ const app = express();
 // ============================================
 
 // Enable Gzip compression
+// Enable Gzip compression
 app.use(compression());
+
+// Security HTTP headers
+app.use(helmet());
+
+// Basic rate limiting: max 100 requests per 15 minutes per IP
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { message: 'Too many requests, please try again later.' }
+});
+app.use(limiter);
 
 // Allow frontend to communicate with backend
 app.use(cors({
@@ -47,7 +61,8 @@ app.use(cors({
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 // Allow server to read JSON data from requests
@@ -81,6 +96,10 @@ app.use('/api/users', require('./routes/userRoutes'));
 // Admin routes
 app.use('/api/admin', require('./routes/adminRoutes'));
 
+// AI Tutor routes
+app.use('/api/ai', require('./routes/aiRoutes'));
+
+
 // API status check route
 app.get('/api', (req, res) => {
   res.json({ message: 'API working' });
@@ -94,6 +113,14 @@ app.get('/', (req, res) => {
 // ============================================
 // ERROR HANDLERS
 // ============================================
+
+// Handle Multer file-upload errors (wrong type, too large, etc.)
+app.use((err, req, res, next) => {
+  if (err.name === 'MulterError' || err.message === 'Only PDF, DOC, images allowed' || err.message === 'Only JPG, JPEG, PNG allowed') {
+    return res.status(400).json({ success: false, message: err.message });
+  }
+  next(err);
+});
 
 // Handle routes that don't exist
 app.use((req, res) => {

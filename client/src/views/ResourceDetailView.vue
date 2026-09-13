@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-4xl mx-auto px-4 py-10">
+  <div class="max-w-7xl mx-auto px-4 py-10">
 
     <!-- Loading -->
     <div v-if="loading" class="animate-pulse space-y-4">
@@ -8,88 +8,107 @@
       <div class="h-40 bg-gray-200 rounded"></div>
     </div>
 
-    <div v-else-if="resource">
-      <!-- Header -->
-      <div class="card p-8 mb-6">
-        <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
-          <div>
-            <div class="flex gap-2 mb-3">
-              <span class="badge-blue text-sm">{{ resource.subject }}</span>
-              <span class="badge text-sm bg-gray-100 text-gray-700">{{ resource.type }}</span>
+    <div v-else-if="resource" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Main Content (Left) -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Header -->
+        <div class="card p-8">
+          <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+            <div>
+              <div class="flex gap-2 mb-3">
+                <span class="badge-blue text-sm">{{ resource.subject }}</span>
+                <span class="badge text-sm bg-gray-100 text-gray-700">{{ resource.type }}</span>
+              </div>
+              <h1 class="text-3xl font-bold text-gray-900">{{ resource.title }}</h1>
             </div>
-            <h1 class="text-3xl font-bold text-gray-900">{{ resource.title }}</h1>
+
+            <!-- Owner Actions -->
+            <div v-if="isOwner" class="flex gap-2">
+              <RouterLink :to="`/upload?edit=${resource._id}`" class="btn-secondary text-sm py-1.5">
+                ✏️ Edit
+              </RouterLink>
+              <button @click="handleDelete" class="btn-danger text-sm py-1.5">
+                🗑 Delete
+              </button>
+            </div>
           </div>
 
-          <!-- Owner Actions -->
-          <div v-if="isOwner" class="flex gap-2">
-            <RouterLink :to="`/upload?edit=${resource._id}`" class="btn-secondary text-sm py-1.5">
-              ✏️ Edit
-            </RouterLink>
-            <button @click="handleDelete" class="btn-danger text-sm py-1.5">
-              🗑 Delete
-            </button>
+          <!-- Meta -->
+          <div class="flex items-center gap-4 text-sm text-gray-500 mb-6">
+            <span>👁 {{ resource.views }} views</span>
+            <span>❤️ {{ resource.saves?.length || 0 }} saves</span>
+            <span>📅 {{ formatDate(resource.createdAt) }}</span>
+            <span>By: <strong class="text-gray-700">{{ resource.uploadedBy?.username }}</strong></span>
           </div>
-        </div>
 
-        <!-- Meta -->
-        <div class="flex items-center gap-4 text-sm text-gray-500 mb-6">
-          <span>👁 {{ resource.views }} views</span>
-          <span>❤️ {{ resource.saves?.length || 0 }} saves</span>
-          <span>📅 {{ formatDate(resource.createdAt) }}</span>
-          <span>By: <strong class="text-gray-700">{{ resource.uploadedBy?.username }}</strong></span>
-        </div>
+          <!-- Description -->
+          <p class="text-gray-700 leading-relaxed text-base whitespace-pre-wrap">{{ resource.description }}</p>
 
-        <!-- Description -->
-        <p class="text-gray-700 leading-relaxed text-base">{{ resource.description }}</p>
-
-        <!-- Link -->
-        <div v-if="resource.url" class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p class="text-sm font-medium text-blue-700 mb-1">🔗 External Link</p>
-          <a :href="resource.url" target="_blank"
-            class="text-blue-600 hover:underline break-all text-sm">
-            {{ resource.url }}
-          </a>
-        </div>
-
-        <!-- File -->
-        <div v-if="resource.file" class="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-          <p class="text-sm font-medium text-green-700 mb-3">📎 Attached File</p>
-          <div class="flex flex-wrap gap-3 items-center">
-            <button @click="showPreview = true" class="btn-primary text-sm py-2">
-              📖 Read Online
-            </button>
-            <a :href="`${BASE_URL}/api/resources/${resource._id}/download`"
-              class="relative inline-flex items-center justify-center px-6 py-2 text-sm font-bold text-white bg-indigo-600 rounded-xl shadow-lg hover:shadow-xl hover:bg-indigo-700 transition-all">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-              </svg>
-              Download File
+          <!-- Link -->
+          <div v-if="resource.url" class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <p class="text-sm font-medium text-blue-700 mb-1">🔗 External Link</p>
+            <a :href="resource.url" target="_blank"
+              class="text-blue-600 hover:underline break-all text-sm">
+              {{ resource.url }}
             </a>
           </div>
-        </div>
 
-        <!-- Preview Modal -->
-        <NotePreviewModal 
-          :isOpen="showPreview" 
-          :title="resource.title"
-          :fileUrl="resource.file"
-          :type="resource.type"
-          :resourceId="resource._id"
-          @close="showPreview = false"
-        />
+          <!-- File -->
+          <div v-if="resource.file" class="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+            <p class="text-sm font-medium text-green-700 mb-3">📎 Attached File</p>
+            <div class="flex flex-wrap gap-3 items-center">
+              <button @click="showPreview = true" class="btn-primary text-sm py-2">
+                📖 Read Online
+              </button>
+              <a :href="`${BASE_URL}/api/resources/${resource._id}/download`"
+                class="relative inline-flex items-center justify-center px-6 py-2 text-sm font-bold text-white bg-indigo-600 rounded-xl shadow-lg hover:shadow-xl hover:bg-indigo-700 transition-all">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                Download File
+              </a>
+            </div>
+          </div>
 
-        <!-- Save Button -->
-        <div class="mt-6 pt-6 border-t border-gray-100">
-          <button v-if="authStore.isLoggedIn" @click="handleSave"
-            :class="saved ? 'btn-danger' : 'btn-secondary'"
-            class="text-sm">
-            {{ saved ? '❤️ Saved' : '🤍 Save Resource' }}
-          </button>
-          <RouterLink v-else to="/login" class="btn-secondary text-sm">
-            Login to Save
-          </RouterLink>
+          <!-- Preview Modal -->
+          <NotePreviewModal 
+            :isOpen="showPreview" 
+            :title="resource.title"
+            :fileUrl="resource.file"
+            :type="resource.type"
+            :resourceId="resource._id"
+            @close="showPreview = false"
+          />
+
+          <!-- Save Button -->
+          <div class="mt-6 pt-6 border-t border-gray-100">
+            <button v-if="authStore.isLoggedIn" @click="handleSave"
+              :class="saved ? 'btn-danger' : 'btn-secondary'"
+              class="text-sm">
+              {{ saved ? '❤️ Saved' : '🤍 Save Resource' }}
+            </button>
+            <RouterLink v-else to="/login" class="btn-secondary text-sm">
+              Login to Save
+            </RouterLink>
+          </div>
         </div>
       </div>
+
+      <!-- AI Tutor Study Partner Panel (Right) -->
+      <div class="lg:col-span-1 h-[680px] rounded-2xl overflow-hidden border border-slate-800/80 shadow-2xl flex flex-col">
+        <div v-if="!authStore.isLoggedIn" class="flex-1 flex flex-col items-center justify-center p-6 bg-slate-900 text-center relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full mix-blend-screen filter blur-[48px] pointer-events-none"></div>
+          <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-4xl mb-4 border border-slate-700">🔒</div>
+          <h3 class="text-base font-bold text-slate-100 mb-2">AI Tutor Locked</h3>
+          <p class="text-xs text-slate-400 max-w-xs mb-6 leading-relaxed">
+            Please log in or create an account to unlock your personal AI Study Partner and master this subject!
+          </p>
+          <RouterLink to="/login" class="btn-primary text-xs px-6 py-2.5">Log In to Unlock</RouterLink>
+        </div>
+        <AITutorPanel v-else :resourceId="resource._id" :resource="resource" />
+      </div>
+
     </div>
 
     <div v-else class="text-center py-20">
@@ -106,6 +125,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/authStore'
 import api, { BASE_URL } from '../services/api'
 import NotePreviewModal from '../components/NotePreviewModal.vue'
+import AITutorPanel from '../components/AITutorPanel.vue'
 
 const route = useRoute()
 const router = useRouter()
