@@ -362,7 +362,26 @@ const downloadResource = async (req, res) => {
     // Check file on disk
     const fs = require('fs');
     if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ message: 'The requested file could not be found on the server' });
+      // If disk file missing (e.g. after container redeploy), provide clean text download of resource content
+      const cleanBaseName = (resource.title || 'study_notes')
+        .replace(/[^a-zA-Z0-9_\-\s]/g, '')
+        .trim()
+        .replace(/\s+/g, '_');
+      
+      const downloadText = `Title: ${resource.title}\n` +
+        `Subject: ${resource.subject}\n` +
+        `Type: ${resource.type}\n` +
+        `Summary: ${resource.shortDescription || resource.description}\n\n` +
+        `==================== STUDY MATERIAL ====================\n\n` +
+        `${resource.content || resource.description || 'No additional content recorded.'}\n\n` +
+        `========================================================\n` +
+        `LearnHub Public Learning Repository • © 2026 LearnHub\n`;
+
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${cleanBaseName}_notes.txt"`);
+      resource.views = (resource.views || 0) + 1;
+      await resource.save();
+      return res.send(downloadText);
     }
 
     // Formulate a clean, professional download name from title + original extension
@@ -399,52 +418,115 @@ const viewResource = async (req, res) => {
   try {
     const resource = await Resource.findById(req.params.id);
 
-    if (!resource || !resource.file) {
-      return res.status(404).json({ message: 'No file associated with this resource' });
+    if (!resource) {
+      return res.status(404).json({ message: 'Resource not found' });
     }
 
-    const cleanRelativePath = resource.file.startsWith('/') ? resource.file.slice(1) : resource.file;
-    const filePath = path.resolve(__dirname, '..', cleanRelativePath);
+    const cleanRelativePath = resource.file ? (resource.file.startsWith('/') ? resource.file.slice(1) : resource.file) : '';
+    const filePath = cleanRelativePath ? path.resolve(__dirname, '..', cleanRelativePath) : '';
 
     const fs = require('fs');
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ message: 'The requested file could not be found on the server' });
+
+    // If file exists on disk, stream it with proper headers
+    if (filePath && fs.existsSync(filePath)) {
+      const ext = path.extname(cleanRelativePath).toLowerCase();
+      const mimeTypes = {
+        '.pdf': 'application/pdf',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.webp': 'image/webp',
+        '.gif': 'image/gif',
+        '.txt': 'text/plain',
+        '.html': 'text/html'
+      };
+
+      const contentType = mimeTypes[ext] || 'application/octet-stream';
+      const cleanBaseName = (resource.title || 'document')
+        .replace(/[^a-zA-Z0-9_\-\s]/g, '')
+        .trim()
+        .replace(/\s+/g, '_');
+      const downloadFilename = `${cleanBaseName}${ext}`;
+
+      res.removeHeader('X-Frame-Options');
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', `inline; filename="${downloadFilename}"`);
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+      res.setHeader('Content-Security-Policy', "frame-ancestors *");
+
+      resource.views = (resource.views || 0) + 1;
+      await resource.save();
+
+      const stream = fs.createReadStream(filePath);
+      return stream.pipe(res);
     }
 
-    const ext = path.extname(cleanRelativePath).toLowerCase();
-    const mimeTypes = {
-      '.pdf': 'application/pdf',
-      '.png': 'image/png',
-      '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg',
-      '.webp': 'image/webp',
-      '.gif': 'image/gif',
-      '.txt': 'text/plain',
-      '.html': 'text/html'
-    };
+    // Fallback: If physical file is absent on this dyno (e.g. after redeploy),
+    // generate an institutional HTML reading view from MongoDB preserved text
+    const title = resource.title || 'Educational Document';
+    const subject = resource.subject || 'Academic';
+    const type = resource.type || 'Document';
+    const summary = resource.shortDescription || resource.description || '';
+    const topics = (resource.keyTopics && resource.keyTopics.length > 0) ? resource.keyTopics : [subject];
+    const bodyContent = resource.content || resource.description || 'No additional text recorded.';
+    
+    const cleanTopicsHtml = topics.map(t => `<span style="display:inline-block;padding:3px 8px;margin:2px;background:#e0edff;color:#0051ab;border-radius:6px;font-size:11px;font-weight:600;">#${t}</span>`).join(' ');
 
-    const contentType = mimeTypes[ext] || 'application/octet-stream';
-    const cleanBaseName = (resource.title || 'document')
-      .replace(/[^a-zA-Z0-9_\-\s]/g, '')
-      .trim()
-      .replace(/\s+/g, '_');
-    const downloadFilename = `${cleanBaseName}${ext}`;
+    const safeHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 24px; background: #f8fafc; color: #1e293b; line-height: 1.6; }
+    .card { max-width: 860px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 32px; }
+    .badge { display: inline-block; padding: 4px 10px; background: #e0edff; color: #0063cf; border: 1px solid #b9d7fc; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-right: 8px; }
+    .badge-sub { display: inline-block; padding: 4px 10px; background: #f1f5f9; color: #475569; border-radius: 6px; font-size: 11px; font-weight: 600; }
+    h1 { font-size: 24px; font-weight: 800; color: #090e40; margin: 12px 0 16px 0; }
+    .abstract { background: #eff6ff; border-left: 4px solid #0063cf; padding: 14px 18px; border-radius: 0 8px 8px 0; margin-bottom: 24px; }
+    .abstract h3 { margin: 0 0 6px 0; font-size: 12px; color: #0063cf; text-transform: uppercase; letter-spacing: 0.5px; }
+    .abstract p { margin: 0; font-size: 13px; color: #334155; }
+    .content-box { white-space: pre-wrap; word-break: break-word; font-size: 14px; color: #1e293b; background: #fdfdfd; border: 1px solid #edf2f7; border-radius: 8px; padding: 20px; }
+    .footer-note { margin-top: 24px; font-size: 11px; color: #94a3b8; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div>
+      <span class="badge">${type}</span>
+      <span class="badge-sub">${subject}</span>
+    </div>
+    <h1>${title}</h1>
+    ${cleanTopicsHtml ? `<div style="margin-bottom:16px;">${cleanTopicsHtml}</div>` : ''}
+    ${summary ? `
+    <div class="abstract">
+      <h3>Verified Curriculum Abstract</h3>
+      <p>${summary}</p>
+    </div>` : ''}
+    <h3 style="font-size:14px;color:#090e40;margin-bottom:8px;">Document Study Content:</h3>
+    <div class="content-box">${bodyContent}</div>
+    <div class="footer-note">
+      National Academic Repository • Republic of Rwanda © 2026 LearnHub
+    </div>
+  </div>
+</body>
+</html>`;
 
-    // Set headers that permit iframe embedding across origins
     res.removeHeader('X-Frame-Options');
-    res.setHeader('Content-Type', contentType);
-    res.setHeader('Content-Disposition', `inline; filename="${downloadFilename}"`);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Disposition', 'inline');
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
     res.setHeader('Content-Security-Policy', "frame-ancestors *");
 
-    // Increment view count
     resource.views = (resource.views || 0) + 1;
     await resource.save();
 
-    const stream = fs.createReadStream(filePath);
-    stream.pipe(res);
+    return res.send(safeHtml);
   } catch (error) {
     console.error('View Resource Error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
