@@ -67,6 +67,28 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    // LOGIN WITH GOOGLE
+    async loginWithGoogle(googleData) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const { data } = await api.post('/auth/google', googleData);
+        if (data.pendingApproval) {
+          return { success: true, pendingApproval: true, message: data.message };
+        }
+        this.token = data.token;
+        this.user = data.user;
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        return { success: true, user: data.user };
+      } catch (err) {
+        this.error = err.response?.data?.message || 'Google authentication failed';
+        return { success: false, message: this.error };
+      } finally {
+        this.loading = false;
+      }
+    },
+
     // LOGOUT
     logout() {
       this.token = null;

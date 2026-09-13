@@ -352,23 +352,41 @@ const downloadResource = async (req, res) => {
     const resource = await Resource.findById(req.params.id);
 
     if (!resource || !resource.file) {
-      return res.status(404).json({ message: 'File not found' });
+      return res.status(404).json({ message: 'No file associated with this resource' });
     }
 
     // Resolve absolute path to the file cleanly and robustly
     const cleanRelativePath = resource.file.startsWith('/') ? resource.file.slice(1) : resource.file;
     const filePath = path.resolve(__dirname, '..', cleanRelativePath);
     
-    // Send file for download
-    res.download(filePath, (err) => {
+    // Check file on disk
+    const fs = require('fs');
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: 'The requested file could not be found on the server' });
+    }
+
+    // Formulate a clean, professional download name from title + original extension
+    const ext = path.extname(cleanRelativePath) || '.pdf';
+    const cleanBaseName = (resource.title || 'resource')
+      .replace(/[^a-zA-Z0-9_\-\s]/g, '')
+      .trim()
+      .replace(/\s+/g, '_');
+    const downloadFilename = `${cleanBaseName}${ext}`;
+
+    // Increment view / download count
+    resource.views = (resource.views || 0) + 1;
+    await resource.save();
+
+    // Send file for download with sanitized filename
+    res.download(filePath, downloadFilename, (err) => {
       if (err) {
-        // Prevent setting headers if they have already been sent
         if (!res.headersSent) {
           res.status(500).json({ message: 'Could not download the file', error: err.message });
         }
       }
     });
   } catch (error) {
+    console.error('Download Resource Error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

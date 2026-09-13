@@ -1,24 +1,18 @@
 <template>
-  <div class="flex flex-col h-full bg-slate-900 border-l border-slate-800 relative overflow-hidden text-slate-100">
-    <!-- Ambient light decoration -->
-    <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full mix-blend-screen filter blur-[64px] pointer-events-none"></div>
-    <div class="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full mix-blend-screen filter blur-[64px] pointer-events-none"></div>
-
+  <div class="flex flex-col h-full bg-slate-50 border-l border-slate-200 relative overflow-hidden text-slate-800">
     <!-- Header -->
-    <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/90 backdrop-blur-md relative z-10">
+    <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-white relative z-10 shadow-xs">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/25">
-          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1-3-3v-2a3 3 0 0 1 3-3h1V6a4 4 0 0 1 4-4z"/>
-            <circle cx="9.5" cy="10" r="1" fill="currentColor" stroke="none"/>
-            <circle cx="14.5" cy="10" r="1" fill="currentColor" stroke="none"/>
-            <path d="M9.5 14.5c.83.83 2.17 1.5 2.5 1.5s1.67-.67 2.5-1.5"/>
-            <path d="M12 2v-1M7 7H5M19 7h-2"/>
+        <div class="w-9 h-9 rounded-lg bg-[#0063cf] flex items-center justify-center text-white shadow-sm">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
           </svg>
         </div>
         <div>
-          <h3 class="text-sm font-extrabold text-slate-100 tracking-tight leading-none">LearnHub AI Tutor</h3>
-          <span class="text-[10px] text-green-400 font-semibold tracking-wider uppercase mt-1 inline-block">● Study Partner Active</span>
+          <h3 class="text-sm font-bold text-[#090e40] tracking-tight leading-none">Curriculum Study Assistant</h3>
+          <span class="text-[10px] text-emerald-600 font-bold tracking-wider uppercase mt-1 inline-flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Official AI Guide Active
+          </span>
         </div>
       </div>
 
@@ -26,9 +20,9 @@
         <!-- Voice Toggle -->
         <button 
           @click="toggleVoice" 
-          class="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
-          :class="voiceEnabled ? 'bg-blue-600/20 border border-blue-500/40 text-blue-400' : 'bg-slate-800 border border-slate-700/50 text-slate-400 hover:text-slate-200'"
-          title="Toggle AI voice response">
+          class="w-8 h-8 rounded-lg flex items-center justify-center transition-all text-xs font-semibold"
+          :class="voiceEnabled ? 'bg-blue-50 border border-[#0063cf] text-[#0063cf]' : 'bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900'"
+          title="Toggle audio response">
           <span v-if="voiceEnabled" class="text-sm">🔊</span>
           <span v-else class="text-sm">🔇</span>
         </button>
@@ -36,27 +30,29 @@
     </div>
 
     <!-- Chat Conversation -->
-    <div ref="chatContainer" class="flex-1 overflow-y-auto p-4 space-y-4 relative z-10">
+    <div ref="chatContainer" class="flex-1 overflow-y-auto p-4 space-y-4 relative z-10 bg-[#f4f6fc]">
       <!-- Welcome Message if empty -->
       <div v-if="messages.length === 0" class="text-center py-5 px-4 space-y-3">
-        <div class="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-indigo-600/20 rounded-2xl flex items-center justify-center mx-auto border border-blue-500/30 shadow-inner">
-          <span class="text-2xl">🎓</span>
+        <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center mx-auto border border-slate-200 shadow-sm text-[#0063cf]">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
         </div>
         <div class="max-w-xs mx-auto">
-          <h4 class="text-sm font-bold text-slate-200">Welcome to your AI Classroom!</h4>
-          <p class="text-xs text-slate-400 mt-1 leading-relaxed">
-            I can help you master this material. Choose a study strategy below or type any question!
+          <h4 class="text-sm font-bold text-[#090e40]">Interactive Document Assistant</h4>
+          <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+            Inquire directly about concepts, derivations, and summaries derived from this verified document.
           </p>
         </div>
 
         <!-- Verified Breakdown & Key Topics Badge -->
-        <div v-if="resource?.shortDescription || resource?.keyTopics?.length" class="text-left bg-slate-950/60 border border-slate-800 rounded-xl p-3 space-y-2 mt-2">
+        <div v-if="resource?.shortDescription || resource?.keyTopics?.length" class="text-left bg-white border border-slate-200 rounded-xl p-3.5 space-y-2.5 mt-2 shadow-xs">
           <div v-if="resource.shortDescription">
-            <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider block mb-0.5">🎯 Verified Breakdown</span>
-            <p class="text-[11px] text-slate-300 leading-relaxed">{{ resource.shortDescription }}</p>
+            <span class="text-[10px] font-bold text-[#0063cf] uppercase tracking-wider block mb-0.5">Verified Document Summary</span>
+            <p class="text-xs text-slate-600 leading-relaxed">{{ resource.shortDescription }}</p>
           </div>
           <div v-if="resource.keyTopics?.length" class="flex flex-wrap gap-1.5 pt-1">
-            <span v-for="t in resource.keyTopics" :key="t" class="px-2 py-0.5 bg-blue-900/40 border border-blue-700/50 rounded-md text-[10px] text-blue-300 font-medium">
+            <span v-for="t in resource.keyTopics" :key="t" class="px-2 py-0.5 bg-blue-50 border border-blue-200 rounded-md text-[10px] text-[#0063cf] font-semibold">
               #{{ t }}
             </span>
           </div>
@@ -65,25 +61,31 @@
 
       <!-- Quick Action Buttons -->
       <div v-if="messages.length === 0" class="grid grid-cols-1 gap-2 pt-2">
-        <button @click="triggerAction('explain')" class="flex items-center gap-3 p-3 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-blue-500/40 transition-all text-left group">
-          <span class="text-lg">💡</span>
+        <button @click="triggerAction('explain')" class="flex items-center gap-3 p-3 rounded-xl bg-white hover:bg-blue-50/50 border border-slate-200 hover:border-[#0063cf] transition-all text-left shadow-xs group">
+          <div class="w-8 h-8 rounded-lg bg-blue-50 text-[#0063cf] flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </div>
           <div>
-            <p class="text-xs font-bold text-slate-200 group-hover:text-blue-400 transition-colors">Explain Simply</p>
-            <p class="text-[10px] text-slate-400 mt-0.5">Simplify the main ideas like I am 10</p>
+            <p class="text-xs font-bold text-[#090e40] group-hover:text-[#0063cf] transition-colors">Core Concepts Overview</p>
+            <p class="text-[10px] text-slate-500 mt-0.5">Clear breakdown structured for exam preparation</p>
           </div>
         </button>
-        <button @click="triggerAction('summarize')" class="flex items-center gap-3 p-3 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-blue-500/40 transition-all text-left group">
-          <span class="text-lg">🧠</span>
+        <button @click="triggerAction('summarize')" class="flex items-center gap-3 p-3 rounded-xl bg-white hover:bg-blue-50/50 border border-slate-200 hover:border-[#0063cf] transition-all text-left shadow-xs group">
+          <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          </div>
           <div>
-            <p class="text-xs font-bold text-slate-200 group-hover:text-blue-400 transition-colors">Key Takeaways</p>
-            <p class="text-[10px] text-slate-400 mt-0.5">Extract the 5 most critical insights</p>
+            <p class="text-xs font-bold text-[#090e40] group-hover:text-[#0063cf] transition-colors">Executive Summary</p>
+            <p class="text-[10px] text-slate-500 mt-0.5">Essential takeaways and highlighted formulas</p>
           </div>
         </button>
-        <button @click="triggerAction('quiz')" class="flex items-center gap-3 p-3 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-blue-500/40 transition-all text-left group">
-          <span class="text-lg">📝</span>
+        <button @click="triggerAction('quiz')" class="flex items-center gap-3 p-3 rounded-xl bg-white hover:bg-blue-50/50 border border-slate-200 hover:border-[#0063cf] transition-all text-left shadow-xs group">
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+          </div>
           <div>
-            <p class="text-xs font-bold text-slate-200 group-hover:text-blue-400 transition-colors">Quiz Me</p>
-            <p class="text-[10px] text-slate-400 mt-0.5">Generate a custom test with spoiler keys</p>
+            <p class="text-xs font-bold text-[#090e40] group-hover:text-[#0063cf] transition-colors">Assessment Evaluation</p>
+            <p class="text-[10px] text-slate-500 mt-0.5">Test comprehension with verified answer key</p>
           </div>
         </button>
       </div>
@@ -92,48 +94,44 @@
       <div v-for="(msg, index) in messages" :key="index" class="flex flex-col" :class="msg.sender === 'user' ? 'items-end' : 'items-start'">
         <div class="flex items-start gap-2 max-w-[85%]" :class="msg.sender === 'user' ? 'flex-row-reverse' : ''">
           <!-- Avatar -->
-          <div class="w-6 h-6 rounded-lg flex items-center justify-center shadow-md mt-1 shrink-0" 
-            :class="msg.sender === 'user' ? 'bg-blue-600 text-white text-xs' : 'bg-slate-800 text-indigo-400 border border-slate-700'">
+          <div class="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold shrink-0 mt-1" 
+            :class="msg.sender === 'user' ? 'bg-[#0063cf] text-white' : 'bg-[#090e40] text-white'">
             <template v-if="msg.sender === 'user'">U</template>
-            <svg v-else class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1-3-3v-2a3 3 0 0 1 3-3h1V6a4 4 0 0 1 4-4z"/>
-              <circle cx="9.5" cy="10" r="1" fill="currentColor" stroke="none"/>
-              <circle cx="14.5" cy="10" r="1" fill="currentColor" stroke="none"/>
+            <svg v-else class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
             </svg>
           </div>
 
           <!-- Message Card -->
-          <div class="p-3 rounded-2xl text-xs leading-relaxed" 
-            :class="msg.sender === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-800/90 border border-slate-700/80 text-slate-200 rounded-tl-none backdrop-blur-sm'">
+          <div class="p-3.5 rounded-xl text-xs leading-relaxed" 
+            :class="msg.sender === 'user' ? 'bg-[#0063cf] text-white rounded-tr-none shadow-xs' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none shadow-xs'">
             
             <!-- Audio Playback if available -->
-            <div v-if="msg.audio" class="mb-2 flex items-center gap-2 p-1.5 bg-slate-900/50 rounded-lg border border-slate-700/30">
-              <button @click="playAudio(msg.audio)" class="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center text-[10px] text-white hover:bg-blue-700">
+            <div v-if="msg.audio" class="mb-2 flex items-center gap-2 p-1.5 bg-slate-50 rounded-lg border border-slate-200">
+              <button @click="playAudio(msg.audio)" class="w-6 h-6 rounded-md bg-[#0063cf] flex items-center justify-center text-[10px] text-white hover:bg-blue-700">
                 ▶
               </button>
-              <span class="text-[10px] text-slate-300 font-medium">Listen to AI Tutor explanation</span>
+              <span class="text-[10px] text-slate-700 font-semibold">Listen to audio narration</span>
             </div>
 
             <!-- Main text (formatted) -->
-            <div v-html="renderMarkdown(msg.text)" class="space-y-2 markdown-body"></div>
+            <div v-html="renderMarkdown(msg.text)" class="space-y-2 tutor-markdown"></div>
           </div>
         </div>
-        <span class="text-[9px] text-slate-500 mt-1 mx-8">{{ msg.time }}</span>
+        <span class="text-[9px] text-slate-400 mt-1 mx-8">{{ msg.time }}</span>
       </div>
 
       <!-- Loading State -->
       <div v-if="loading" class="flex items-start gap-2 max-w-[80%]">
-        <div class="w-6 h-6 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center animate-pulse">
-          <svg class="w-3.5 h-3.5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1-3-3v-2a3 3 0 0 1 3-3h1V6a4 4 0 0 1 4-4z"/>
-            <circle cx="9.5" cy="10" r="1" fill="currentColor" stroke="none"/>
-            <circle cx="14.5" cy="10" r="1" fill="currentColor" stroke="none"/>
+        <div class="w-6 h-6 rounded-md bg-[#090e40] flex items-center justify-center text-white shrink-0">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
           </svg>
         </div>
-        <div class="p-3 rounded-2xl bg-slate-800/90 border border-slate-700/80 rounded-tl-none backdrop-blur-sm flex items-center gap-2">
-          <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
-          <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
-          <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+        <div class="p-3 rounded-xl bg-white border border-slate-200 rounded-tl-none flex items-center gap-1.5 shadow-xs">
+          <span class="w-1.5 h-1.5 bg-[#0063cf] rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+          <span class="w-1.5 h-1.5 bg-[#0063cf] rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+          <span class="w-1.5 h-1.5 bg-[#0063cf] rounded-full animate-bounce" style="animation-delay: 300ms"></span>
         </div>
       </div>
     </div>
@@ -142,18 +140,18 @@
     <audio ref="audioPlayer" class="hidden"></audio>
 
     <!-- Footer Input -->
-    <div class="p-3 border-t border-slate-800 bg-slate-900/95 relative z-10">
+    <div class="p-3 border-t border-slate-200 bg-white relative z-10">
       <form @submit.prevent="sendMessage" class="flex gap-2 items-center">
         <input 
           v-model="inputMessage" 
           type="text" 
-          placeholder="Ask me anything..." 
-          class="flex-1 bg-slate-950 border border-slate-800 focus:border-blue-500/50 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500/30 transition-all"
+          placeholder="Ask curriculum assistant a question..." 
+          class="flex-1 bg-slate-50 border border-slate-200 focus:border-[#0063cf] focus:bg-white rounded-xl px-3.5 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none transition-all"
           :disabled="loading"
         />
         <button 
           type="submit" 
-          class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl p-2 w-8 h-8 flex items-center justify-center shadow-md shadow-blue-600/20 transition-all shrink-0"
+          class="bg-[#0063cf] hover:bg-[#0051ab] disabled:opacity-40 text-white rounded-xl p-2 w-8 h-8 flex items-center justify-center shadow-xs transition-all shrink-0"
           :disabled="!inputMessage.trim() || loading">
           <svg class="w-3.5 h-3.5 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
@@ -196,18 +194,18 @@ const renderMarkdown = (text) => {
     .replace(/>/g, '&gt;');
 
   // Bullet points
-  html = html.replace(/^\s*[-*+]\s+(.+)$/gm, '<li class="list-disc ml-4 my-1 text-slate-300">$1</li>');
-  html = html.replace(/(<li class="list-disc ml-4 my-1 text-slate-300">.*<\/li>)/gs, '<ul class="space-y-1 my-2">$1</ul>');
+  html = html.replace(/^\s*[-*+]\s+(.+)$/gm, '<li class="list-disc ml-4 my-1 text-slate-700">$1</li>');
+  html = html.replace(/(<li class="list-disc ml-4 my-1 text-slate-700">.*<\/li>)/gs, '<ul class="space-y-1 my-2">$1</ul>');
 
   // Bold
-  html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="font-extrabold text-white">$1</strong>');
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-[#090e40]">$1</strong>');
   
   // Headers
-  html = html.replace(/^### (.*$)/gim, '<h5 class="text-sm font-bold text-blue-400 mt-3 mb-1">$1</h5>');
-  html = html.replace(/^## (.*$)/gim, '<h4 class="text-base font-extrabold text-indigo-300 mt-4 mb-2">$1</h4>');
+  html = html.replace(/^### (.*$)/gim, '<h5 class="text-xs font-bold text-[#0063cf] uppercase tracking-wider mt-3 mb-1">$1</h5>');
+  html = html.replace(/^## (.*$)/gim, '<h4 class="text-sm font-bold text-[#090e40] mt-3 mb-1.5">$1</h4>');
 
   // Paragraphs
-  html = html.replace(/^(?!<h|<li|<ul|<ol)(.+)$/gm, '<p class="my-2 text-slate-300">$1</p>');
+  html = html.replace(/^(?!<h|<li|<ul|<ol)(.+)$/gm, '<p class="my-1.5 text-slate-700">$1</p>');
 
   return html;
 }
@@ -301,11 +299,11 @@ const scrollDown = () => {
 </script>
 
 <style>
-.markdown-body ul {
+.tutor-markdown ul {
   list-style-type: disc !important;
-  margin-left: 1.5rem !important;
+  margin-left: 1.25rem !important;
 }
-.markdown-body strong {
-  color: #ffffff !important;
+.tutor-markdown strong {
+  color: #090e40 !important;
 }
 </style>

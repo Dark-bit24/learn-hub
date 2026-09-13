@@ -57,12 +57,22 @@ const userSchema = new mongoose.Schema({
     default: 'student'
   },
 
-  // Account approval status (for teachers)
+  // Account approval status (teachers must be approved by admin)
   isApproved: {
     type: Boolean,
     default: true
-  }
+  },
 
+  // Google OAuth fields
+  googleId: {
+    type: String,
+    default: ''
+  },
+  authProvider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local'
+  }
 }, {
   // Automatically add createdAt and updatedAt fields
   timestamps: true
