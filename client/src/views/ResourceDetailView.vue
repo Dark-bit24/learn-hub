@@ -3,71 +3,103 @@
 
     <!-- Loading -->
     <div v-if="loading" class="animate-pulse space-y-4">
-      <div class="h-8 bg-gray-200 rounded w-3/4"></div>
-      <div class="h-4 bg-gray-200 rounded w-1/2"></div>
-      <div class="h-40 bg-gray-200 rounded"></div>
+      <div class="h-8 bg-slate-200 rounded-xl w-3/4"></div>
+      <div class="h-4 bg-slate-200 rounded-lg w-1/2"></div>
+      <div class="h-64 bg-slate-100 rounded-2xl"></div>
     </div>
 
     <div v-else-if="resource" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       
       <!-- Main Content (Left) -->
       <div class="lg:col-span-2 space-y-6">
-        <!-- Header -->
-        <div class="card p-8">
-          <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+        <!-- Header Card -->
+        <div class="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-xl shadow-slate-100/50 relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-blue-500/5 to-transparent pointer-events-none"></div>
+
+          <div class="flex flex-wrap items-start justify-between gap-4 mb-4 relative z-10">
             <div>
-              <div class="flex gap-2 mb-3">
-                <span class="badge-blue text-sm">{{ resource.subject }}</span>
-                <span class="badge text-sm bg-gray-100 text-gray-700">{{ resource.type }}</span>
+              <div class="flex flex-wrap gap-2 mb-3">
+                <span class="px-3 py-1 bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-bold rounded-full">
+                  {{ resource.subject }}
+                </span>
+                <span class="px-3 py-1 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold rounded-full">
+                  {{ resource.type }}
+                </span>
+                <span v-if="resource.keyTopics?.length" class="px-3 py-1 bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold rounded-full flex items-center gap-1">
+                  ✓ Verified Breakdown
+                </span>
               </div>
-              <h1 class="text-3xl font-bold text-gray-900">{{ resource.title }}</h1>
+              <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">{{ resource.title }}</h1>
             </div>
 
-            <!-- Owner Actions -->
-            <div v-if="isOwner" class="flex gap-2">
-              <RouterLink :to="`/upload?edit=${resource._id}`" class="btn-secondary text-sm py-1.5">
+            <!-- Owner / Admin Actions -->
+            <div v-if="canManage" class="flex gap-2">
+              <RouterLink v-if="isOwner" :to="`/upload?edit=${resource._id}`" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors flex items-center gap-1.5">
                 ✏️ Edit
               </RouterLink>
-              <button @click="handleDelete" class="btn-danger text-sm py-1.5">
+              <button @click="handleDelete" class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-xl text-xs transition-colors flex items-center gap-1.5">
                 🗑 Delete
               </button>
             </div>
           </div>
 
-          <!-- Meta -->
-          <div class="flex items-center gap-4 text-sm text-gray-500 mb-6">
-            <span>👁 {{ resource.views }} views</span>
-            <span>❤️ {{ resource.saves?.length || 0 }} saves</span>
-            <span>📅 {{ formatDate(resource.createdAt) }}</span>
-            <span>By: <strong class="text-gray-700">{{ resource.uploadedBy?.username }}</strong></span>
+          <!-- Meta Bar -->
+          <div class="flex flex-wrap items-center gap-4 text-xs text-slate-500 mb-6 pb-5 border-b border-slate-100">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+              {{ resource.views }} views
+            </span>
+            <span class="flex items-center gap-1.5 text-rose-500 font-semibold">
+              <svg class="w-4 h-4 fill-rose-500" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              {{ totalLikesCount }} likes
+            </span>
+            <span class="text-slate-400">📅 {{ formatDate(resource.createdAt) }}</span>
+            <span class="text-slate-600">Shared by: <strong class="text-slate-800">{{ resource.uploadedBy?.username || 'Community Member' }}</strong></span>
+          </div>
+
+          <!-- Verified Short Summary (if generated by breakdown) -->
+          <div v-if="resource.shortDescription" class="mb-6 p-4 rounded-2xl bg-gradient-to-r from-blue-50/70 to-indigo-50/70 border border-blue-100/80">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-blue-800 mb-1.5 flex items-center gap-1.5">
+              <span>🎯</span> Key Educational Summary
+            </h4>
+            <p class="text-slate-700 text-sm leading-relaxed">{{ resource.shortDescription }}</p>
           </div>
 
           <!-- Description -->
-          <p class="text-gray-700 leading-relaxed text-base whitespace-pre-wrap">{{ resource.description }}</p>
+          <div class="space-y-2">
+            <h3 class="text-sm font-bold text-slate-800">Resource Description</h3>
+            <p class="text-slate-700 leading-relaxed text-sm whitespace-pre-wrap">{{ resource.description }}</p>
+          </div>
 
-          <!-- Link -->
-          <div v-if="resource.url" class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p class="text-sm font-medium text-blue-700 mb-1">🔗 External Link</p>
-            <a :href="resource.url" target="_blank"
-              class="text-blue-600 hover:underline break-all text-sm">
+          <!-- External Link if exists -->
+          <div v-if="resource.url" class="mt-6 p-4 bg-blue-50/80 rounded-2xl border border-blue-200/80">
+            <p class="text-xs font-bold text-blue-800 mb-1">🔗 External Reference Link</p>
+            <a :href="resource.url" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline break-all text-sm font-medium">
               {{ resource.url }}
             </a>
           </div>
 
-          <!-- File -->
-          <div v-if="resource.file" class="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-            <p class="text-sm font-medium text-green-700 mb-3">📎 Attached File</p>
-            <div class="flex flex-wrap gap-3 items-center">
-              <button @click="showPreview = true" class="btn-primary text-sm py-2">
-                📖 Read Online
-              </button>
-              <a :href="`${BASE_URL}/api/resources/${resource._id}/download`"
-                class="relative inline-flex items-center justify-center px-6 py-2 text-sm font-bold text-white bg-indigo-600 rounded-xl shadow-lg hover:shadow-xl hover:bg-indigo-700 transition-all">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                </svg>
-                Download File
-              </a>
+          <!-- Attached Document / Notes File (Read & Download for Guests & Members) -->
+          <div v-if="resource.file" class="mt-6 p-5 bg-gradient-to-r from-slate-50 to-indigo-50/40 rounded-2xl border border-indigo-100/80">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <p class="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-1">📎 Attached Document Available</p>
+                <p class="text-xs text-slate-500">Free & instant access for everyone — no account required to read or download.</p>
+              </div>
+              <div class="flex flex-wrap gap-2.5 items-center">
+                <button @click="showPreview = true" class="px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl shadow-md shadow-blue-500/25 transition-all">
+                  📖 Read Online
+                </button>
+                <a :href="`${BASE_URL}/api/resources/${resource._id}/download`"
+                  class="inline-flex items-center justify-center px-5 py-2.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl shadow-sm transition-all"
+                  download
+                >
+                  <svg class="w-4 h-4 mr-1.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                  </svg>
+                  Download File
+                </a>
+              </div>
             </div>
           </div>
 
@@ -81,39 +113,42 @@
             @close="showPreview = false"
           />
 
-          <!-- Save Button -->
-          <div class="mt-6 pt-6 border-t border-gray-100">
-            <button v-if="authStore.isLoggedIn" @click="handleSave"
-              :class="saved ? 'btn-danger' : 'btn-secondary'"
-              class="text-sm">
-              {{ saved ? '❤️ Saved' : '🤍 Save Resource' }}
-            </button>
-            <RouterLink v-else to="/login" class="btn-secondary text-sm">
-              Login to Save
+          <!-- Like / Save Bar (open for both guests & members) -->
+          <div class="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <button 
+                @click="handleSave"
+                :class="isLiked ? 'bg-rose-50 border-rose-200 text-rose-600' : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'"
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border text-xs font-bold transition-all shadow-sm active:scale-95"
+              >
+                <svg class="w-4 h-4" :fill="isLiked ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+                <span>{{ isLiked ? 'Liked' : 'Like Resource' }}</span>
+                <span class="ml-1 px-1.5 py-0.5 rounded-full bg-white text-[11px] font-bold border">{{ totalLikesCount }}</span>
+              </button>
+              <span v-if="!authStore.isLoggedIn" class="text-[11px] text-slate-400">
+                (Saved as guest preference)
+              </span>
+            </div>
+
+            <RouterLink to="/resources" class="text-xs font-semibold text-slate-500 hover:text-blue-600">
+              ← Back to Resources
             </RouterLink>
           </div>
         </div>
       </div>
 
-      <!-- AI Tutor Study Partner Panel (Right) -->
-      <div class="lg:col-span-1 h-[680px] rounded-2xl overflow-hidden border border-slate-800/80 shadow-2xl flex flex-col">
-        <div v-if="!authStore.isLoggedIn" class="flex-1 flex flex-col items-center justify-center p-6 bg-slate-900 text-center relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full mix-blend-screen filter blur-[48px] pointer-events-none"></div>
-          <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-4xl mb-4 border border-slate-700">🔒</div>
-          <h3 class="text-base font-bold text-slate-100 mb-2">AI Tutor Locked</h3>
-          <p class="text-xs text-slate-400 max-w-xs mb-6 leading-relaxed">
-            Please log in or create an account to unlock your personal AI Study Partner and master this subject!
-          </p>
-          <RouterLink to="/login" class="btn-primary text-xs px-6 py-2.5">Log In to Unlock</RouterLink>
-        </div>
-        <AITutorPanel v-else :resourceId="resource._id" :resource="resource" />
+      <!-- AI Tutor Study Partner Panel (Right) - Unlocked for everyone! -->
+      <div class="lg:col-span-1 h-[680px] rounded-3xl overflow-hidden border border-slate-800 shadow-2xl flex flex-col bg-slate-900">
+        <AITutorPanel :resourceId="resource._id" :resource="resource" />
       </div>
 
     </div>
 
     <div v-else class="text-center py-20">
-      <p class="text-gray-400 text-xl">Resource not found.</p>
-      <RouterLink to="/resources" class="btn-primary mt-4 inline-block">Back to Resources</RouterLink>
+      <p class="text-slate-400 text-lg">Resource not found.</p>
+      <RouterLink to="/resources" class="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold mt-4 inline-block shadow-md">Back to Resources</RouterLink>
     </div>
 
   </div>
@@ -126,6 +161,7 @@ import { useAuthStore } from '../stores/authStore'
 import api, { BASE_URL } from '../services/api'
 import NotePreviewModal from '../components/NotePreviewModal.vue'
 import AITutorPanel from '../components/AITutorPanel.vue'
+import { isResourceLikedByGuest, toggleGuestLikedResource } from '../services/guestService'
 
 const route = useRoute()
 const router = useRouter()
@@ -133,12 +169,20 @@ const authStore = useAuthStore()
 
 const resource = ref(null)
 const loading = ref(true)
-const saved = ref(false)
+const isLiked = ref(false)
+const totalLikesCount = ref(0)
 const showPreview = ref(false)
 
 const isOwner = computed(() =>
   authStore.isLoggedIn &&
   resource.value?.uploadedBy?._id === authStore.currentUser?._id
+)
+
+const canManage = computed(() =>
+  authStore.isLoggedIn && (
+    resource.value?.uploadedBy?._id === authStore.currentUser?._id ||
+    authStore.isAdmin
+  )
 )
 
 const formatDate = (d) => new Date(d).toLocaleDateString('en-US', {
@@ -149,7 +193,13 @@ onMounted(async () => {
   try {
     const { data } = await api.get(`/resources/${route.params.id}`)
     resource.value = data
-    saved.value = data.saves?.includes(authStore.currentUser?._id)
+    totalLikesCount.value = (data.saves?.length || 0) + (data.guestLikes?.length || 0)
+
+    if (authStore.isLoggedIn) {
+      isLiked.value = data.saves?.includes(authStore.currentUser?._id)
+    } else {
+      isLiked.value = isResourceLikedByGuest(data._id)
+    }
   } catch (err) {
     console.error(err)
   } finally {
@@ -160,9 +210,13 @@ onMounted(async () => {
 const handleSave = async () => {
   try {
     const { data } = await api.post(`/resources/${resource.value._id}/save`)
-    saved.value = data.saved
+    isLiked.value = data.saved
+    totalLikesCount.value = data.savesCount
+    if (!authStore.isLoggedIn) {
+      toggleGuestLikedResource(resource.value._id, data.saved)
+    }
   } catch (err) {
-    router.push('/login')
+    console.error('Failed to save resource:', err)
   }
 }
 

@@ -12,7 +12,7 @@ const {
   getFeaturedResources,
   downloadResource
 } = require('../controllers/resourceController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, optionalProtect } = require('../middleware/authMiddleware');
 
 // ============================================
 // FILE UPLOAD CONFIGURATION
@@ -74,7 +74,10 @@ router.put('/:id', protect, upload.single('file'), updateResource);
 // DELETE /api/resources/:id → delete resource (protected)
 router.delete('/:id', protect, deleteResource);
 
-// POST /api/resources/:id/save → save/unsave (protected)
-router.post('/:id/save', protect, saveResource);
+// POST /api/resources/:id/save → save/like (supports users & guests)
+router.post('/:id/save', optionalProtect, saveResource);
+
+// POST /api/resources/:id/like → like alias (supports users & guests)
+router.post('/:id/like', optionalProtect, saveResource);
 
 module.exports = router;

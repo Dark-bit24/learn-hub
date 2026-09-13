@@ -81,6 +81,12 @@ const resourceSchema = new mongoose.Schema({
     ref: 'User'
   }],
 
+  // Anonymous guest likes tracked by persistent guest UUID or IP
+  guestLikes: [{
+    type: String,
+    default: []
+  }],
+
   // Is this resource featured on homepage
   featured: {
     type: Boolean,

@@ -234,8 +234,22 @@ const deleteResource = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to delete this resource' });
     }
 
+    // Safely delete physical file on disk if exists
+    if (resource.file) {
+      const fs = require('fs');
+      const cleanPath = resource.file.startsWith('/') ? resource.file.slice(1) : resource.file;
+      const filePath = path.resolve(__dirname, '..', cleanPath);
+      if (fs.existsSync(filePath)) {
+        try {
+          fs.unlinkSync(filePath);
+        } catch (fileErr) {
+          console.error('Failed to unlink deleted resource file:', fileErr);
+        }
+      }
+    }
+
     await resource.deleteOne();
-    res.json({ message: 'Resource deleted successfully' });
+    res.json({ message: 'Resource and file deleted successfully' });
 
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -243,39 +257,71 @@ const deleteResource = async (req, res) => {
 };
 
 // ============================================
-// SAVE / UNSAVE RESOURCE (bookmark)
+// SAVE / UNSAVE / LIKE RESOURCE (supports both users & guests)
 // POST /api/resources/:id/save
 // ============================================
 const saveResource = async (req, res) => {
   try {
     const resource = await Resource.findById(req.params.id);
-    const user = await User.findById(req.user._id);
 
     if (!resource) {
       return res.status(404).json({ message: 'Resource not found' });
     }
 
-    const userId = req.user._id;
-    const isSaved = resource.saves.includes(userId);
+    if (!resource.guestLikes) {
+      resource.guestLikes = [];
+    }
 
-    if (isSaved) {
-      // Remove from resource saves
-      resource.saves = resource.saves.filter(id => id.toString() !== userId.toString());
-      // Remove from user savedResources
-      user.savedResources = user.savedResources.filter(id => id.toString() !== resource._id.toString());
+    // Authenticated user path
+    if (req.user && req.user._id) {
+      const user = await User.findById(req.user._id);
+      const userId = req.user._id;
+      const isSaved = resource.saves.some(id => id.toString() === userId.toString());
+
+      if (isSaved) {
+        resource.saves = resource.saves.filter(id => id.toString() !== userId.toString());
+        if (user) {
+          user.savedResources = user.savedResources.filter(id => id.toString() !== resource._id.toString());
+        }
+      } else {
+        resource.saves.push(userId);
+        if (user) {
+          user.savedResources.push(resource._id);
+        }
+      }
+
+      await resource.save();
+      if (user) await user.save();
+
+      const totalCount = (resource.saves?.length || 0) + (resource.guestLikes?.length || 0);
+      return res.json({
+        saved: !isSaved,
+        savesCount: totalCount,
+        isGuest: false
+      });
+    }
+
+    // Guest user path: track via guestId passed in body/header or IP fallback
+    const guestId = req.body?.guestId || req.headers['x-guest-id'] || `guest_${req.ip || 'anon'}`;
+    const isGuestSaved = resource.guestLikes.includes(guestId);
+
+    if (isGuestSaved) {
+      resource.guestLikes = resource.guestLikes.filter(id => id !== guestId);
     } else {
-      // Add to resource saves
-      resource.saves.push(userId);
-      // Add to user savedResources
-      user.savedResources.push(resource._id);
+      resource.guestLikes.push(guestId);
     }
 
     await resource.save();
-    await user.save();
-    
-    res.json({ saved: !isSaved, savesCount: resource.saves.length });
+    const totalCount = (resource.saves?.length || 0) + (resource.guestLikes?.length || 0);
+
+    return res.json({
+      saved: !isGuestSaved,
+      savesCount: totalCount,
+      isGuest: true
+    });
 
   } catch (error) {
+    console.error('SAVE/LIKE RESOURCE ERROR:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

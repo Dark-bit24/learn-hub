@@ -2,6 +2,8 @@
 // ADMIN CONTROLLER - handles admin tasks
 // ============================================
 
+const path = require('path');
+const fs = require('fs');
 const User = require('../models/User');
 const Resource = require('../models/Resource');
 
@@ -67,7 +69,7 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-// @desc    Delete a user account
+// @desc    Delete a user account and clean up their uploaded files
 // @route   DELETE /api/admin/users/:id
 // @access  Private/Admin
 const deleteUser = async (req, res) => {
@@ -78,13 +80,30 @@ const deleteUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Don't allow deleting the last admin or yourself
+    // Don't allow deleting yourself
     if (user._id.toString() === req.user._id.toString()) {
       return res.status(400).json({ message: 'You cannot delete your own account' });
     }
 
+    // Find all resources uploaded by this user and delete their physical files
+    const userResources = await Resource.find({ uploadedBy: user._id });
+    for (const r of userResources) {
+      if (r.file) {
+        const cleanPath = r.file.startsWith('/') ? r.file.slice(1) : r.file;
+        const filePath = path.resolve(__dirname, '..', cleanPath);
+        if (fs.existsSync(filePath)) {
+          try {
+            fs.unlinkSync(filePath);
+          } catch (err) {
+            console.error('Failed to unlink user resource file:', err);
+          }
+        }
+      }
+      await r.deleteOne();
+    }
+
     await user.deleteOne();
-    res.json({ message: 'User deleted successfully' });
+    res.json({ message: `User account and ${userResources.length} associated resource(s) deleted successfully` });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -125,7 +144,7 @@ const createUser = async (req, res) => {
   }
 };
 
-// @desc    Delete any resource
+// @desc    Delete any resource and its file on disk
 // @route   DELETE /api/admin/resources/:id
 // @access  Private/Admin
 const deleteResourceAdmin = async (req, res) => {
@@ -136,8 +155,21 @@ const deleteResourceAdmin = async (req, res) => {
       return res.status(404).json({ message: 'Resource not found' });
     }
 
+    // Delete attached file on disk if exists
+    if (resource.file) {
+      const cleanPath = resource.file.startsWith('/') ? resource.file.slice(1) : resource.file;
+      const filePath = path.resolve(__dirname, '..', cleanPath);
+      if (fs.existsSync(filePath)) {
+        try {
+          fs.unlinkSync(filePath);
+        } catch (fileErr) {
+          console.error('Failed to unlink admin deleted file:', fileErr);
+        }
+      }
+    }
+
     await resource.deleteOne();
-    res.json({ message: 'Resource deleted successfully' });
+    res.json({ message: 'Resource and attached file deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

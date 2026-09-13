@@ -124,11 +124,15 @@
                   </td>
                   <td class="px-6 py-4 text-right space-x-3 whitespace-nowrap">
                     <button v-if="resource.file" @click="openPreview(resource)" 
-                      class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
+                      class="text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-2.5 py-1 rounded-lg transition-colors">
                       View
                     </button>
+                    <a v-if="resource.file" :href="`${BASE_URL}/api/resources/${resource._id}/download`" download
+                      class="text-xs font-bold text-emerald-600 hover:text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg transition-colors inline-block">
+                      Download
+                    </a>
                     <button @click="handleDeleteResource(resource._id)" 
-                      class="text-sm font-semibold text-rose-500 hover:text-rose-700 transition-colors">
+                      class="text-xs font-bold text-rose-600 hover:text-rose-800 bg-rose-50 px-2.5 py-1 rounded-lg transition-colors">
                       Delete
                     </button>
                   </td>
@@ -258,7 +262,7 @@
 
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
-import api from '../services/api'
+import api, { BASE_URL } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import NotePreviewModal from '../components/NotePreviewModal.vue'
 

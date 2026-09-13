@@ -8,7 +8,13 @@
     <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/90 backdrop-blur-md relative z-10">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/25">
-          <span class="text-white text-base font-bold">🤖</span>
+          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1-3-3v-2a3 3 0 0 1 3-3h1V6a4 4 0 0 1 4-4z"/>
+            <circle cx="9.5" cy="10" r="1" fill="currentColor" stroke="none"/>
+            <circle cx="14.5" cy="10" r="1" fill="currentColor" stroke="none"/>
+            <path d="M9.5 14.5c.83.83 2.17 1.5 2.5 1.5s1.67-.67 2.5-1.5"/>
+            <path d="M12 2v-1M7 7H5M19 7h-2"/>
+          </svg>
         </div>
         <div>
           <h3 class="text-sm font-extrabold text-slate-100 tracking-tight leading-none">LearnHub AI Tutor</h3>
@@ -86,9 +92,14 @@
       <div v-for="(msg, index) in messages" :key="index" class="flex flex-col" :class="msg.sender === 'user' ? 'items-end' : 'items-start'">
         <div class="flex items-start gap-2 max-w-[85%]" :class="msg.sender === 'user' ? 'flex-row-reverse' : ''">
           <!-- Avatar -->
-          <div class="w-6 h-6 rounded-lg flex items-center justify-center text-xs shadow-md mt-1 shrink-0" 
-            :class="msg.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-indigo-400 border border-slate-700'">
-            {{ msg.sender === 'user' ? 'U' : '🤖' }}
+          <div class="w-6 h-6 rounded-lg flex items-center justify-center shadow-md mt-1 shrink-0" 
+            :class="msg.sender === 'user' ? 'bg-blue-600 text-white text-xs' : 'bg-slate-800 text-indigo-400 border border-slate-700'">
+            <template v-if="msg.sender === 'user'">U</template>
+            <svg v-else class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1-3-3v-2a3 3 0 0 1 3-3h1V6a4 4 0 0 1 4-4z"/>
+              <circle cx="9.5" cy="10" r="1" fill="currentColor" stroke="none"/>
+              <circle cx="14.5" cy="10" r="1" fill="currentColor" stroke="none"/>
+            </svg>
           </div>
 
           <!-- Message Card -->
@@ -112,7 +123,13 @@
 
       <!-- Loading State -->
       <div v-if="loading" class="flex items-start gap-2 max-w-[80%]">
-        <div class="w-6 h-6 rounded-lg bg-slate-800 text-indigo-400 border border-slate-700 flex items-center justify-center text-xs animate-pulse">🤖</div>
+        <div class="w-6 h-6 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center animate-pulse">
+          <svg class="w-3.5 h-3.5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1-3-3v-2a3 3 0 0 1 3-3h1V6a4 4 0 0 1 4-4z"/>
+            <circle cx="9.5" cy="10" r="1" fill="currentColor" stroke="none"/>
+            <circle cx="14.5" cy="10" r="1" fill="currentColor" stroke="none"/>
+          </svg>
+        </div>
         <div class="p-3 rounded-2xl bg-slate-800/90 border border-slate-700/80 rounded-tl-none backdrop-blur-sm flex items-center gap-2">
           <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
           <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 150ms"></span>

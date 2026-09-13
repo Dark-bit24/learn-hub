@@ -18,11 +18,16 @@
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <!-- Toggle AI Tutor Sidebar Button -->
-          <button v-if="authStore.isLoggedIn" @click="showTutorSidebar = !showTutorSidebar" 
+          <!-- Toggle AI Tutor Sidebar Button (available to all visitors) -->
+          <button @click="showTutorSidebar = !showTutorSidebar" 
             class="h-10 px-4 flex items-center justify-center gap-2 rounded-xl border transition-all text-xs font-bold"
             :class="showTutorSidebar ? 'bg-blue-600/20 border-blue-500/50 text-blue-400 hover:bg-blue-600/30' : 'bg-slate-800 border-slate-700/50 text-slate-300 hover:text-white hover:bg-slate-700'">
-            <span>🤖</span>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1-3-3v-2a3 3 0 0 1 3-3h1V6a4 4 0 0 1 4-4z"/>
+              <circle cx="9.5" cy="10" r="1" fill="currentColor" stroke="none"/>
+              <circle cx="14.5" cy="10" r="1" fill="currentColor" stroke="none"/>
+              <path d="M9.5 14.5c.83.83 2.17 1.5 2.5 1.5s1.67-.67 2.5-1.5"/>
+            </svg>
             <span>{{ showTutorSidebar ? 'Hide AI Tutor' : 'Ask AI Tutor' }}</span>
           </button>
 
@@ -77,7 +82,7 @@
         </div>
 
         <!-- Right Side: AI Tutor sidebar panel -->
-        <div v-if="showTutorSidebar && authStore.isLoggedIn" class="w-full lg:w-[400px] h-full shrink-0 border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col bg-slate-900">
+        <div v-if="showTutorSidebar" class="w-full lg:w-[400px] h-full shrink-0 border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col bg-slate-900">
           <AITutorPanel :resourceId="resourceId" />
         </div>
       </div>
