@@ -50,8 +50,24 @@ const resourceSchema = new mongoose.Schema({
     default: ''
   },
 
-  // Uploaded file path
+  // Uploaded file path (local disk path)
   file: {
+    type: String,
+    default: ''
+  },
+
+  // Persistent binary file data in MongoDB (ensures files survive container redeployments)
+  fileData: {
+    type: Buffer,
+    select: false
+  },
+
+  fileContentType: {
+    type: String,
+    default: ''
+  },
+
+  fileOriginalName: {
     type: String,
     default: ''
   },

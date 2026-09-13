@@ -164,7 +164,7 @@ const currentViewerUrl = computed(() => {
   return directViewUrl.value
 })
 
-const isPdf = computed(() => props.fileUrl?.toLowerCase().endsWith('.pdf'))
+const isPdf = computed(() => props.type === 'PDF' || props.fileUrl?.toLowerCase().endsWith('.pdf'))
 const isImage = computed(() => {
   const ext = props.fileUrl?.split('.').pop()?.toLowerCase()
   return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)
