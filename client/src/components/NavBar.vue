@@ -1,23 +1,5 @@
 <template>
   <header class="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-xs">
-    <!-- Top Institutional Utility Bar -->
-    <div class="bg-[#090e40] text-slate-300 text-[11px] py-1 px-4 sm:px-8 border-b border-slate-800">
-      <div class="max-w-7xl mx-auto flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#0099e8]"></span>
-          <span class="font-medium tracking-wide">National Academic & Educational Materials Repository</span>
-        </div>
-        <div class="hidden sm:flex items-center gap-4 text-slate-300">
-          <span class="flex items-center gap-1">
-            <svg class="w-3 h-3 text-[#0099e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-            Support: 24/7 Helpline
-          </span>
-          <span>|</span>
-          <span class="font-semibold text-white">English (EN)</span>
-        </div>
-      </div>
-    </div>
-
     <!-- Main Navigation Bar -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-16">
