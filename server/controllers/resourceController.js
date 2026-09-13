@@ -387,6 +387,10 @@ const downloadResource = async (req, res) => {
     });
   } catch (error) {
     console.error('Download Resource Error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 // ============================================
 // VIEW / STREAM RESOURCE INLINE
 // GET /api/resources/:id/view
