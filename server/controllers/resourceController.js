@@ -571,8 +571,8 @@ const viewResource = async (req, res) => {
       res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
       res.setHeader('Content-Security-Policy', "frame-ancestors *");
 
-      resource.views = (resource.views || 0) + 1;
-      await resource.save();
+      // Non-blocking view increment
+      Resource.updateOne({ _id: req.params.id }, { $inc: { views: 1 } }).catch(err => console.warn('View count update error:', err.message));
 
       const stream = fs.createReadStream(filePath);
       return stream.pipe(res);
@@ -590,18 +590,18 @@ const viewResource = async (req, res) => {
       res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
       res.setHeader('Content-Security-Policy', "frame-ancestors *");
 
-      resource.views = (resource.views || 0) + 1;
-      await resource.save();
+      // Non-blocking view increment
+      Resource.updateOne({ _id: req.params.id }, { $inc: { views: 1 } }).catch(err => console.warn('View count update error:', err.message));
 
-      // Write to disk cache if path is valid
-      try {
-        if (filePath && !fs.existsSync(filePath)) {
+      // Write to disk cache asynchronously
+      if (filePath && !fs.existsSync(filePath)) {
+        try {
           const dir = path.dirname(filePath);
           if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-          fs.writeFileSync(filePath, resource.fileData);
+          fs.writeFile(filePath, resource.fileData, () => {});
+        } catch (cacheErr) {
+          console.warn('Could not cache file to disk:', cacheErr.message);
         }
-      } catch (cacheErr) {
-        console.warn('Could not cache file to disk:', cacheErr.message);
       }
 
       return res.send(resource.fileData);
