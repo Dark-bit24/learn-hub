@@ -97,7 +97,7 @@
                 </div>
               </div>
               <p class="text-slate-600 text-[11px] leading-relaxed">
-                How may I help you today? You can search curriculum materials, learn how to upload documents, or receive study explanations for any topic.
+                How may I help you today? I can guide you through the platform, help you find and read learning materials, explain how to upload documents, or tutor you on any academic topic.
               </p>
             </div>
 
@@ -223,6 +223,16 @@ const messagesContainer = ref(null)
 const audioPlayer = ref(null)
 
 const quickChips = [
+  {
+    label: 'What is LearnHub and what can I do here?',
+    desc: 'Platform overview, features, navigation guide, and user roles',
+    prompt: 'What is LearnHub and how does it work? Show me around the platform.'
+  },
+  {
+    label: 'How do I read notes and documents online?',
+    desc: 'Step-by-step guide to using the built-in document viewer',
+    prompt: 'How do I read notes and documents online on LearnHub?'
+  },
   {
     label: 'How do I search and access learning resources?',
     desc: 'Guide to directory filtering, online preview, and free downloads',

@@ -117,6 +117,7 @@
             :fileUrl="resource.file"
             :type="resource.type"
             :resourceId="resource._id"
+            :resourceContent="resource.content || resource.description || ''"
             @close="showPreview = false"
           />
 

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Resource = require('../models/Resource');
+const { findRelevantChunks } = require('../utils/chunker');
 
 /**
  * Check if a query targets confidential or sensitive system/user data
@@ -19,7 +20,7 @@ const isConfidentialQuery = (text) => {
     'admin hash', 'hash password', 'user email list', 'user database',
     'shadow file', 'etc/passwd', 'system secret', 'confidential data',
     'leak secret', 'reveal secret', 'show secret', 'give me passwords',
-    'give me credentials', 'dump database', 'internal token'
+    'give me credentials', 'dump database', 'dump the database', 'internal token'
   ];
 
   return sensitiveKeywords.some(keyword => lower.includes(keyword));
@@ -111,6 +112,44 @@ const callGemini = async (systemPrompt, messagesList) => {
   }
 
   return candidateText;
+};
+
+/**
+ * Comprehensive platform guide for the Global AI Assistant
+ * Provides detailed navigation help and website explanation
+ */
+const PLATFORM_GUIDE = {
+  overview: `LearnHub is a free academic learning platform and resource repository where students, teachers, and guests can discover, share, and study educational materials. It serves as a digital library with built-in AI tutoring capabilities.`,
+  
+  pages: {
+    home: { path: '/', description: 'Landing page with search bar, subject category navigation (Mathematics, Programming, Science, Technology, Business, History, Language, Arts), and featured resources grid.' },
+    resources: { path: '/resources', description: 'Full searchable catalog of all learning materials. Filter by subject discipline, resource format (PDF, Video, Article, Tutorial, Link, Notes), or search by keyword. Accessible to all visitors including guests.' },
+    resourceDetail: { path: '/resources/:id', description: 'Detailed view of a single resource showing title, subject, format, views count, likes count, curriculum abstract, and full description. Includes "Read Online" button to open the document viewer, direct download link, and an embedded AI Study Partner panel for asking questions about the document.' },
+    upload: { path: '/upload', description: 'Upload form for sharing educational materials. Requires login. Supports PDF, DOCX, TXT, PNG, JPG files up to 10MB. Requires a meaningful description (20+ chars, 4+ words). After upload, the system automatically extracts text, generates a curriculum summary, and creates AI-searchable chunks.' },
+    profile: { path: '/profile', description: 'Personal dashboard showing your uploaded documents, saved/bookmarked library, total views statistics, and profile settings (username, bio, avatar).' },
+    admin: { path: '/admin', description: 'Administrative workspace for approving teacher applications, managing all published documents, and overseeing registered user accounts. Admin-only access.' },
+    login: { path: '/login', description: 'Sign in with email/password or Google authentication.' },
+    register: { path: '/register', description: 'Create a new student or teacher account. Teacher accounts require admin approval before login is permitted.' }
+  },
+
+  features: [
+    'Browse and search educational materials without an account (guest access)',
+    'Read documents online with the built-in document viewer (PDFs render in-browser, text files display inline)',
+    'Download any resource directly to your device',
+    'Like/bookmark resources — works for both registered users and guests',
+    'Ask the AI Tutor questions about any document you are viewing',
+    'Get AI-generated concept explanations, executive summaries, and knowledge quizzes',
+    'Upload and share your own study materials with the community',
+    'Voice narration of AI responses (when enabled)',
+    'Google Docs Viewer fallback for PDFs that cannot render natively'
+  ],
+
+  roles: {
+    student: 'Can browse, download, like, upload resources, and use AI tutoring. Account is active immediately upon registration.',
+    teacher: 'Same as student but requires admin approval before the account can be used. Designed for educators sharing official curriculum materials.',
+    admin: 'Full platform management: approve teachers, audit documents, manage users, and create accounts directly.',
+    guest: 'Can browse, search, view, download, and like resources without creating an account. Has a persistent anonymous identity for tracking likes.'
+  }
 };
 
 /**
@@ -393,6 +432,51 @@ const generateLocalTutorResponse = async ({ message = '', action, resource, user
   }
 
   // 4. Platform Navigation & Administration Guidance
+
+  // Platform Overview & Website Explanation
+  if (msgLower.includes('what is learnhub') || msgLower.includes('what is this') || msgLower.includes('what does this') || msgLower.includes('how does this work') || msgLower.includes('show me around') || msgLower.includes('what can i do') || msgLower.includes('help me navigate') || msgLower.includes('about this platform') || msgLower.includes('about this website') || msgLower.includes('what is this website') || msgLower.includes('explain this site')) {
+    return `### 🎓 Welcome to LearnHub — Your Academic Learning Platform!\n\n` +
+      `${PLATFORM_GUIDE.overview}\n\n` +
+      `#### 📍 Platform Pages & Navigation:\n` +
+      `- **[Home Page](/)**: ${PLATFORM_GUIDE.pages.home.description}\n` +
+      `- **[All Resources](/resources)**: ${PLATFORM_GUIDE.pages.resources.description}\n` +
+      `- **[Upload Documents](/upload)**: ${PLATFORM_GUIDE.pages.upload.description}\n` +
+      `- **[Your Profile](/profile)**: ${PLATFORM_GUIDE.pages.profile.description}\n` +
+      `- **[Admin Dashboard](/admin)**: ${PLATFORM_GUIDE.pages.admin.description}\n\n` +
+      `#### ✨ Key Features:\n` +
+      PLATFORM_GUIDE.features.map(f => `- ${f}`).join('\n') + `\n\n` +
+      `💡 *Ask me anything specific — like "how do I upload a file?" or "find me programming notes"!*`;
+  }
+
+  if (msgLower.includes('how to read') || msgLower.includes('read online') || msgLower.includes('view notes') || msgLower.includes('read notes') || msgLower.includes('open document') || msgLower.includes('preview document') || msgLower.includes('view document')) {
+    return `### 📖 How to Read Notes & Documents Online\n\n` +
+      `LearnHub lets you read any uploaded document directly in your browser — no download needed!\n\n` +
+      `#### Step-by-Step Guide:\n` +
+      `1. **Find a Resource**: Go to **[All Resources](/resources)** and search or filter by subject.\n` +
+      `2. **Open the Resource**: Click **"View Details"** on any resource card.\n` +
+      `3. **Read Online**: On the resource detail page, click the **"Read Online"** button.\n` +
+      `4. **Document Viewer Opens**: A fullscreen viewer will display your document:\n` +
+      `   - **PDFs**: Rendered directly in the browser. Toggle **Google Viewer** if the native viewer has issues.\n` +
+      `   - **Images**: Displayed with full resolution.\n` +
+      `   - **Text files (.txt, .doc, .docx)**: Content displayed in a clean, readable format.\n` +
+      `5. **AI Study Partner**: While reading, toggle the **"Ask AI Tutor"** sidebar to ask questions about the content!\n\n` +
+      `#### Additional Options:\n` +
+      `- 🔗 **New Tab**: Open the document in a separate browser tab\n` +
+      `- ⬇️ **Download**: Save the file to your device\n` +
+      `- 🔍 **Fullscreen**: The viewer automatically enters fullscreen for distraction-free reading\n\n` +
+      `💡 *All of this works without logging in — guests can browse, read, and download freely!*`;
+  }
+
+  if (msgLower.includes('role') || msgLower.includes('student vs teacher') || msgLower.includes('who can') || msgLower.includes('user type') || msgLower.includes('account type')) {
+    return `### 👥 User Roles & Permissions on LearnHub\n\n` +
+      `LearnHub supports four types of users:\n\n` +
+      `1. **🎒 Student**: ${PLATFORM_GUIDE.roles.student}\n` +
+      `2. **📚 Teacher / Educator**: ${PLATFORM_GUIDE.roles.teacher}\n` +
+      `3. **🛡️ Administrator**: ${PLATFORM_GUIDE.roles.admin}\n` +
+      `4. **👤 Guest (No Account)**: ${PLATFORM_GUIDE.roles.guest}\n\n` +
+      `Ready to get started? **[Register here](/register)** or **[Sign in](/login)**!`;
+  }
+
   if (msgLower.includes('upload') || msgLower.includes('how to share') || msgLower.includes('add file')) {
     return `### 📤 How to Upload Learning Resources on LearnHub\n\n` +
       `Sharing notes, guides, and documentation is straightforward:\n` +
@@ -492,6 +576,24 @@ const askTutor = async (req, res) => {
         const verifiedSummary = resource.shortDescription || resource.description;
         const keyTopicsStr = resource.keyTopics?.length > 0 ? resource.keyTopics.join(', ') : 'Not specified';
 
+        // Load chunks for RAG-based retrieval
+        let relevantContent = '';
+        try {
+          const resourceWithChunks = await Resource.findById(resourceId).select('+chunks');
+          if (resourceWithChunks?.chunks?.length > 0) {
+            const userQuery = message || action || '';
+            const relevantChunks = findRelevantChunks(resourceWithChunks.chunks, userQuery, 5);
+            relevantContent = relevantChunks.map((c, i) => `[Chunk ${i + 1}]: ${c.text}`).join('\n\n');
+          }
+        } catch (chunkErr) {
+          console.warn('[AI Tutor] Could not load chunks:', chunkErr.message);
+        }
+
+        // Fallback to full content if no chunks available
+        if (!relevantContent) {
+          relevantContent = (resource.content || '').substring(0, 20000) || '(No attached text content extracted)';
+        }
+
         resourceContext = `
 The student is currently viewing/studying the following learning resource:
 - Title: ${resource.title}
@@ -499,13 +601,14 @@ The student is currently viewing/studying the following learning resource:
 - Format: ${resource.type}
 - Verified Short Description: ${verifiedSummary}
 - Key Topics: ${keyTopicsStr}
+- Document Summary: ${resource.chunkSummary || 'Not available'}
 ${resource.url ? `- External Link: ${resource.url}` : ''}
 
---- EXTRACTED CONTENT FROM ATTACHED MATERIAL ---
-${(resource.content || '').substring(0, 20000) || '(No attached text content extracted)'}
-------------------------------------------------
+--- RELEVANT CONTENT SECTIONS FROM ATTACHED MATERIAL ---
+${relevantContent}
+--------------------------------------------------------
 IMPORTANT INSTRUCTION FOR RESOURCE:
-Base your explanation strictly on the verified short description, key topics, and extracted material.
+Base your explanation strictly on the verified short description, key topics, and the relevant content sections provided above.
 `;
       }
     }
@@ -530,9 +633,26 @@ Base your explanation strictly on the verified short description, key topics, an
       try {
         const systemPrompt = `
 You are "LearnHub AI Assistant & Tutor", an intelligent, encouraging, and highly knowledgeable study companion and platform navigator.
+
+PLATFORM OVERVIEW: ${PLATFORM_GUIDE.overview}
+
 PLATFORM NAVIGATION:
-- Home ('/'), Resources ('/resources'), Upload ('/upload'), Profile ('/profile'), Admin ('/admin').
+- Home ('/') — ${PLATFORM_GUIDE.pages.home.description}
+- All Resources ('/resources') — ${PLATFORM_GUIDE.pages.resources.description}
+- Resource Detail ('/resources/:id') — ${PLATFORM_GUIDE.pages.resourceDetail.description}
+- Upload ('/upload') — ${PLATFORM_GUIDE.pages.upload.description}
+- Profile ('/profile') — ${PLATFORM_GUIDE.pages.profile.description}
+- Admin ('/admin') — ${PLATFORM_GUIDE.pages.admin.description}
+- Login ('/login'), Register ('/register')
+
+KEY FEATURES: ${PLATFORM_GUIDE.features.join('; ')}
+
 Total resources on platform: ${totalResources}.
+
+USER ROLES: Student (immediate access), Teacher (requires admin approval), Admin (full management), Guest (browse/download/like without account).
+
+When users ask about navigation, explain how to use the platform step-by-step with links to the relevant pages using markdown link syntax like [Page Name](/path).
+When users ask about reading notes online, explain the Read Online feature and the document viewer.
 ${resourceContext ? resourceContext : 'The student is asking a general learning or platform navigation question.'}
 `;
         const messages = [

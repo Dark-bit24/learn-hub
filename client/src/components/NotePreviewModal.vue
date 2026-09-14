@@ -90,6 +90,32 @@
               alt="Note preview" />
           </div>
 
+          <!-- Text File Viewer -->
+          <div v-else-if="isTextFile" class="w-full h-full flex flex-col p-2">
+            <div class="w-full h-full overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 shadow-2xl">
+              <div class="p-6 sm:p-8">
+                <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-800">
+                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold shadow-md">
+                    <span class="text-[10px] tracking-wider font-extrabold">TXT</span>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-bold text-slate-200">{{ title }}</h4>
+                    <p class="text-[10px] text-slate-500">Document Content — Read Online</p>
+                  </div>
+                </div>
+                <div v-if="resourceContent" class="prose prose-invert prose-sm max-w-none">
+                  <pre class="whitespace-pre-wrap font-sans text-sm text-slate-300 leading-relaxed bg-transparent border-0 p-0">{{ resourceContent }}</pre>
+                </div>
+                <div v-else class="text-center py-12">
+                  <p class="text-slate-500 text-sm">No text content available for inline viewing.</p>
+                  <a :href="`${BASE_URL}/api/resources/${resourceId}/download`" class="inline-flex items-center mt-4 px-5 py-2.5 text-sm font-bold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-all">
+                    Download to view locally
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Fallback -->
           <div v-else class="text-center p-8 bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-800 shadow-xl max-w-sm">
             <div class="text-6xl mb-4">📄</div>
@@ -140,7 +166,8 @@ const props = defineProps({
   title: String,
   fileUrl: String,
   type: String,
-  resourceId: String
+  resourceId: String,
+  resourceContent: { type: String, default: '' }
 })
 
 const emit = defineEmits(['close'])
@@ -168,6 +195,11 @@ const isPdf = computed(() => props.type === 'PDF' || props.fileUrl?.toLowerCase(
 const isImage = computed(() => {
   const ext = props.fileUrl?.split('.').pop()?.toLowerCase()
   return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)
+})
+
+const isTextFile = computed(() => {
+  const ext = props.fileUrl?.split('.').pop()?.toLowerCase()
+  return ['txt', 'doc', 'docx'].includes(ext) || props.type === 'Notes'
 })
 
 const modalContainer = ref(null)

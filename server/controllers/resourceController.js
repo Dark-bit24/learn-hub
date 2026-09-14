@@ -7,6 +7,7 @@ const User = require('../models/User');
 const path = require('path');
 const { extractResourceContent } = require('../utils/textExtractor');
 const { validateMeaningfulDescription, analyzeAndBreakdownResource } = require('../utils/contentAnalyzer');
+const { chunkText, generateChunkSummary } = require('../utils/chunker');
 
 // ============================================
 // GET ALL RESOURCES (with filters)
@@ -131,6 +132,14 @@ const createResource = async (req, res) => {
     resource.shortDescription = breakdown.shortDescription;
     resource.keyTopics = breakdown.keyTopics;
 
+    // Chunk content for RAG retrieval
+    if (content && content.trim().length > 0) {
+      const chunks = chunkText(content);
+      resource.chunks = chunks;
+      const chunkSummary = await generateChunkSummary(chunks, resource.title, resource.subject);
+      resource.chunkSummary = chunkSummary;
+    }
+
     await resource.save();
 
     // Return created resource with uploader info
@@ -236,6 +245,17 @@ const updateResource = async (req, res) => {
     });
     resource.shortDescription = breakdown.shortDescription;
     resource.keyTopics = breakdown.keyTopics;
+
+    // Re-chunk content for RAG retrieval
+    if (content && content.trim().length > 0) {
+      const chunks = chunkText(content);
+      resource.chunks = chunks;
+      const chunkSummary = await generateChunkSummary(chunks, resource.title, resource.subject);
+      resource.chunkSummary = chunkSummary;
+    } else {
+      resource.chunks = [];
+      resource.chunkSummary = '';
+    }
 
     await resource.save();
 

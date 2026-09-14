@@ -399,6 +399,7 @@
         :title="selectedResource?.title" 
         :file-url="selectedResource?.file" 
         :type="selectedResource?.type"
+        :resourceContent="selectedResource?.content || selectedResource?.description || ''"
         @close="showPreview = false"
       />
 

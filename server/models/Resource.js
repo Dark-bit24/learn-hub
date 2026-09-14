@@ -124,7 +124,24 @@ const resourceSchema = new mongoose.Schema({
   // Key educational topics and concepts identified in the resource
   keyTopics: [{
     type: String
-  }]
+  }],
+
+  // Document chunks for RAG-based retrieval
+  chunks: {
+    type: [{
+      index: { type: Number },
+      text: { type: String },
+      wordCount: { type: Number }
+    }],
+    select: false,
+    default: []
+  },
+
+  // AI-generated summary of the uploaded notes/document
+  chunkSummary: {
+    type: String,
+    default: ''
+  }
 
 }, {
   timestamps: true
