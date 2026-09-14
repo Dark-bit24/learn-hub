@@ -40,12 +40,12 @@ const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
   fileFilter: (req, file, cb) => {
-    const allowed = /pdf|doc|docx|txt|png|jpg|jpeg/;
+    const allowed = /pdf|doc|docx|odt|rtf|ppt|pptx|odp|key|xls|xlsx|csv|ods|txt|md|json|py|js|ts|html|css|c|cpp|java|sh|xml|yaml|yml|png|jpg|jpeg|gif|webp|svg/;
     const ext = allowed.test(path.extname(file.originalname).toLowerCase());
     if (ext) {
       cb(null, true);
     } else {
-      cb(new Error('Only PDF, DOC, images allowed'));
+      cb(new Error('File format not supported. Allowed formats: PDF, Word (DOC/DOCX), PowerPoint (PPT/PPTX), Excel (XLS/XLSX), Text, Code, Images'));
     }
   }
 });

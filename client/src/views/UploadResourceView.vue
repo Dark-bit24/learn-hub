@@ -84,13 +84,13 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1.5">Upload File (optional)</label>
           <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-            <input type="file" @change="handleFile" accept=".pdf,.doc,.docx,.txt,.png,.jpg"
+            <input type="file" @change="handleFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.txt,.md,.json,.py,.js,.ts,.html,.png,.jpg,.jpeg,.gif,.webp,.svg"
               class="hidden" ref="fileInput" />
             <button type="button" @click="$refs.fileInput.click()"
               class="text-blue-600 font-medium hover:underline text-sm">
               📎 {{ currentFileName ? 'Change file' : 'Choose file' }}
             </button>
-            <p class="text-gray-400 text-xs mt-1">PDF, DOC, Images — Max 10MB</p>
+            <p class="text-gray-400 text-xs mt-1">PDF, Office (DOC/PPT/XLS), Text, Code, Images — Max 10MB</p>
             <p v-if="selectedFile" class="text-green-600 text-sm mt-2 font-medium">
               ✅ New file: {{ selectedFile.name }}
             </p>

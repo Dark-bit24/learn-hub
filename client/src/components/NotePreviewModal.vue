@@ -72,7 +72,7 @@
         
         <!-- Left Side: File Viewer -->
         <div class="flex-1 h-full overflow-hidden p-3 sm:p-5 flex flex-col items-center justify-center relative">
-          <!-- PDF Viewer (supports direct stream + Google Docs Viewer fallback) -->
+          <!-- PDF Viewer -->
           <div v-if="isPdf" class="w-full h-full flex flex-col">
             <iframe 
               :src="currentViewerUrl" 
@@ -90,17 +90,45 @@
               alt="Note preview" />
           </div>
 
-          <!-- Text File Viewer -->
-          <div v-else-if="isTextFile" class="w-full h-full flex flex-col p-2">
+          <!-- Office Presentation / Document / Spreadsheet Viewer (PPT, PPTX, DOC, DOCX, XLS, XLSX) -->
+          <div v-else-if="isOfficeDoc" class="w-full h-full flex flex-col">
+            <div class="mb-2 flex items-center justify-between px-2 text-xs">
+              <span class="text-slate-400">Viewing {{ fileExtLabel }} presentation/document online</span>
+              <button 
+                @click="showTextMode = !showTextMode" 
+                class="text-indigo-400 hover:text-indigo-300 font-semibold underline"
+              >
+                {{ showTextMode ? 'Switch to Document View' : 'Switch to Extracted Text View' }}
+              </button>
+            </div>
+            
+            <div v-if="!showTextMode" class="w-full h-full">
+              <iframe 
+                :src="`https://docs.google.com/viewer?url=${encodeURIComponent(directViewUrl)}&embedded=true`" 
+                class="w-full h-full rounded-xl shadow-2xl border border-slate-800 bg-white"
+                frameborder="0"
+                allowfullscreen>
+              </iframe>
+            </div>
+            
+            <div v-else class="w-full h-full overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-6">
+              <div class="prose prose-invert prose-sm max-w-none">
+                <pre class="whitespace-pre-wrap font-sans text-sm text-slate-300 leading-relaxed bg-transparent border-0 p-0">{{ resourceContent || 'No extracted text available.' }}</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Text File & Code Viewer -->
+          <div v-else-if="isTextFile || resourceContent" class="w-full h-full flex flex-col p-2">
             <div class="w-full h-full overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 shadow-2xl">
               <div class="p-6 sm:p-8">
                 <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-800">
                   <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold shadow-md">
-                    <span class="text-[10px] tracking-wider font-extrabold">TXT</span>
+                    <span class="text-[10px] tracking-wider font-extrabold">{{ fileExtLabel }}</span>
                   </div>
                   <div>
                     <h4 class="text-sm font-bold text-slate-200">{{ title }}</h4>
-                    <p class="text-[10px] text-slate-500">Document Content — Read Online</p>
+                    <p class="text-[10px] text-slate-500">Uploaded Document & Notes — Read Online</p>
                   </div>
                 </div>
                 <div v-if="resourceContent" class="prose prose-invert prose-sm max-w-none">
@@ -120,9 +148,9 @@
           <div v-else class="text-center p-8 bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-800 shadow-xl max-w-sm">
             <div class="text-6xl mb-4">📄</div>
             <h4 class="text-lg font-bold text-slate-200 mb-2">No Preview Available</h4>
-            <p class="text-sm text-slate-400 mb-6">Preview is not supported for this file type. You can download the file to view it locally.</p>
+            <p class="text-sm text-slate-400 mb-6">Preview is not supported for this file format. You can download the file directly to view it.</p>
             <a :href="`${BASE_URL}/api/resources/${resourceId}/download`" class="inline-flex items-center justify-center px-6 py-3 text-sm font-bold text-white bg-indigo-600 rounded-xl shadow-lg hover:shadow-xl hover:bg-indigo-700 transition-all">
-              Download File
+              Download Original File
             </a>
           </div>
         </div>
@@ -191,15 +219,27 @@ const currentViewerUrl = computed(() => {
   return directViewUrl.value
 })
 
+const showTextMode = ref(false)
+
+const fileExtLabel = computed(() => {
+  const ext = props.fileUrl?.split('.').pop()?.toUpperCase()
+  return ext || props.type?.toUpperCase() || 'DOC'
+})
+
 const isPdf = computed(() => props.type === 'PDF' || props.fileUrl?.toLowerCase().endsWith('.pdf'))
 const isImage = computed(() => {
   const ext = props.fileUrl?.split('.').pop()?.toLowerCase()
-  return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)
+  return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)
+})
+
+const isOfficeDoc = computed(() => {
+  const ext = props.fileUrl?.split('.').pop()?.toLowerCase()
+  return ['ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx', 'ods', 'odp', 'rtf', 'key'].includes(ext)
 })
 
 const isTextFile = computed(() => {
   const ext = props.fileUrl?.split('.').pop()?.toLowerCase()
-  return ['txt', 'doc', 'docx'].includes(ext) || props.type === 'Notes'
+  return ['txt', 'md', 'json', 'csv', 'py', 'js', 'ts', 'html', 'css', 'c', 'cpp', 'java', 'sh', 'xml', 'yaml', 'yml'].includes(ext) || props.type === 'Notes' || props.type === 'Article' || props.type === 'Tutorial'
 })
 
 const modalContainer = ref(null)

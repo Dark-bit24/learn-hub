@@ -41,8 +41,8 @@ const extractTextFromFile = async (filePath) => {
       }
     }
 
-    // 3. Markdown / code files treated as plain text
-    if (['.md', '.json', '.csv', '.js', '.ts', '.py', '.html'].includes(ext)) {
+    // 3. Markdown / code / configuration files treated as plain text
+    if (['.md', '.json', '.csv', '.js', '.ts', '.py', '.html', '.css', '.c', '.cpp', '.java', '.sh', '.xml', '.yaml', '.yml', '.rtf', '.txt', '.log'].includes(ext)) {
       const text = await fs.promises.readFile(absolutePath, 'utf8');
       return text.substring(0, 60000);
     }

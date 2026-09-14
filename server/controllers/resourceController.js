@@ -411,7 +411,7 @@ const downloadResource = async (req, res) => {
       .replace(/[^a-zA-Z0-9_\-\s]/g, '')
       .trim()
       .replace(/\s+/g, '_');
-    const downloadFilename = `${cleanBaseName}${ext.startsWith('.') ? ext : '.' + ext}`;
+    const downloadFilename = resource.fileOriginalName || `${cleanBaseName}${ext.startsWith('.') ? ext : '.' + ext}`;
 
     const fs = require('fs');
 
@@ -429,7 +429,7 @@ const downloadResource = async (req, res) => {
 
     // 2. If persistent binary file data exists in MongoDB, stream it directly
     if (resource.fileData && resource.fileData.length > 0) {
-      res.setHeader('Content-Type', resource.fileContentType || 'application/pdf');
+      res.setHeader('Content-Type', resource.fileContentType || 'application/octet-stream');
       res.setHeader('Content-Disposition', `attachment; filename="${downloadFilename}"`);
       resource.views = (resource.views || 0) + 1;
       await resource.save();
@@ -514,7 +514,7 @@ const viewResource = async (req, res) => {
       .replace(/[^a-zA-Z0-9_\-\s]/g, '')
       .trim()
       .replace(/\s+/g, '_');
-    const downloadFilename = `${cleanBaseName}${ext.startsWith('.') ? ext : '.' + ext}`;
+    const downloadFilename = resource.fileOriginalName || `${cleanBaseName}${ext.startsWith('.') ? ext : '.' + ext}`;
 
     const fs = require('fs');
 
@@ -527,8 +527,33 @@ const viewResource = async (req, res) => {
         '.jpeg': 'image/jpeg',
         '.webp': 'image/webp',
         '.gif': 'image/gif',
+        '.svg': 'image/svg+xml',
         '.txt': 'text/plain',
-        '.html': 'text/html'
+        '.md': 'text/markdown',
+        '.html': 'text/html',
+        '.json': 'application/json',
+        '.csv': 'text/csv',
+        '.py': 'text/plain',
+        '.js': 'text/plain',
+        '.ts': 'text/plain',
+        '.css': 'text/css',
+        '.c': 'text/plain',
+        '.cpp': 'text/plain',
+        '.java': 'text/plain',
+        '.sh': 'text/plain',
+        '.xml': 'application/xml',
+        '.yaml': 'text/plain',
+        '.yml': 'text/plain',
+        '.doc': 'application/msword',
+        '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        '.ppt': 'application/vnd.ms-powerpoint',
+        '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        '.xls': 'application/vnd.ms-excel',
+        '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        '.rtf': 'application/rtf',
+        '.odt': 'application/vnd.oasis.opendocument.text',
+        '.odp': 'application/vnd.oasis.opendocument.presentation',
+        '.ods': 'application/vnd.oasis.opendocument.spreadsheet'
       };
 
       const contentType = mimeTypes[ext] || 'application/pdf';

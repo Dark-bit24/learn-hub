@@ -351,28 +351,39 @@ const generateLocalTutorResponse = async ({ message = '', action, resource, user
     if (action === 'quiz' || msgLower.includes('quiz') || msgLower.includes('test me')) {
       const topicList = (resource.keyTopics && resource.keyTopics.length >= 2)
         ? resource.keyTopics
-        : [subject, 'Fundamentals', 'Application'];
+        : [subject, 'Core Concepts', 'Practical Application'];
+      const topTopic = topicList[0] || subject;
+      const subTopic = topicList[1] || 'Foundations';
+      const thirdTopic = topicList[2] || 'Analysis';
 
-      return `### 📝 Knowledge Check: ${title}\n\n` +
-        `Test your understanding of the concepts in this material:\n\n` +
-        `**Question 1**: What primary objective is addressed by "${title}"?\n` +
-        `- A) Unrelated external topics\n` +
-        `- B) Core concepts and practical frameworks in ${subject}\n` +
-        `- C) Entertainment only\n` +
-        `- D) None of the above\n\n` +
-        `**Question 2**: Which key subject domain does this resource cover?\n` +
-        `- A) ${topicList[0] || 'Fundamentals'}\n` +
-        `- B) Ancient metallurgy only\n` +
-        `- C) Fictional linguistics\n` +
-        `- D) Cooking recipes\n\n` +
-        `**Question 3**: What is the most effective way to retain the information in this guide?\n` +
-        `- A) Discard notes immediately\n` +
-        `- B) Active recall, self-testing, and connecting principles to ${subject} exercises\n` +
-        `- C) Passive skim without practice\n` +
-        `- D) Memorizing arbitrary terms without comprehension\n\n` +
+      return `### 📝 Interactive Curriculum Quiz: ${title}\n\n` +
+        `Test your mastery of the concepts covered in this uploaded study material:\n\n` +
+        `**Question 1 (Core Focus)**: What primary academic subject area and objective does "${title}" cover?\n` +
+        `- A) General entertainment and non-academic content\n` +
+        `- B) Essential principles, frameworks, and exercises in **${subject}** (${topTopic})\n` +
+        `- C) Historical fiction and creative writing\n` +
+        `- D) Unstructured notes without academic focus\n\n` +
+        `**Question 2 (Key Topic & Application)**: Which specific educational topic is directly analyzed within these uploaded notes?\n` +
+        `- A) **${topTopic}** and **${subTopic}**\n` +
+        `- B) Ancient alchemy and mythology\n` +
+        `- C) Standalone dictionary definitions only\n` +
+        `- D) Culinary arts and recipes\n\n` +
+        `**Question 3 (Concept Retention)**: According to the material's overview ("${shortDesc.substring(0, 100)}..."), what is the most effective approach to mastering **${thirdTopic}**?\n` +
+        `- A) Passive skimming without self-testing\n` +
+        `- B) Active recall, solving practice problems, and reviewing key topics: *${topics}*\n` +
+        `- C) Memorizing terms without understanding underlying concepts\n` +
+        `- D) Skipping the exercises and reading once\n\n` +
+        `**Question 4 (Synthesis)**: How do the concepts in "${title}" connect to real-world exam requirements in ${subject}?\n` +
+        `- A) They provide structural understanding and practical problem-solving methods\n` +
+        `- B) They are purely theoretical with no practical application\n` +
+        `- C) They replace all course textbooks permanently\n` +
+        `- D) They only apply to elementary-level study\n\n` +
         `---\n` +
-        `*▼ Answers (Scroll to check):*\n` +
-        `*1: B | 2: A | 3: B*`;
+        `#### 💡 Answer Key & Explanations:\n` +
+        `- **Q1: B** — *${title}* is catalogued under **${subject}** with focus on ${topTopic}.\n` +
+        `- **Q2: A** — The uploaded document directly covers **${topTopic}** and **${subTopic}**.\n` +
+        `- **Q3: B** — Active recall and topic-focused revision yield maximum retention.\n` +
+        `- **Q4: A** — Study materials in ${subject} bridge core theory with practical application.`;
     }
 
     // Default chat on specific resource
