@@ -178,16 +178,16 @@ const isLiked = ref(false)
 const totalLikesCount = ref(0)
 const showPreview = ref(false)
 
-const isOwner = computed(() =>
-  authStore.isLoggedIn &&
-  resource.value?.uploadedBy?._id === authStore.currentUser?._id
-)
+const isOwner = computed(() => {
+  if (!authStore.isLoggedIn || !resource.value?.uploadedBy || !authStore.currentUser) return false
+  const uploaderId = typeof resource.value.uploadedBy === 'object' 
+    ? (resource.value.uploadedBy._id || resource.value.uploadedBy)
+    : resource.value.uploadedBy
+  return uploaderId?.toString() === authStore.currentUser._id?.toString()
+})
 
 const canManage = computed(() =>
-  authStore.isLoggedIn && (
-    resource.value?.uploadedBy?._id === authStore.currentUser?._id ||
-    authStore.isAdmin
-  )
+  authStore.isLoggedIn && (isOwner.value || authStore.isAdmin)
 )
 
 const formatDate = (d) => new Date(d).toLocaleDateString('en-US', {
@@ -228,10 +228,15 @@ const handleSave = async () => {
 const handleDelete = async () => {
   if (!confirm('Are you sure you want to delete this resource?')) return
   try {
-    await api.delete(`/resources/${resource.value._id}`)
+    if (authStore.isAdmin) {
+      await api.delete(`/admin/resources/${resource.value._id}`)
+    } else {
+      await api.delete(`/resources/${resource.value._id}`)
+    }
     router.push('/resources')
   } catch (err) {
-    alert('Failed to delete resource')
+    console.error('Delete error:', err)
+    alert(err.response?.data?.message || 'Failed to delete resource')
   }
 }
 </script>

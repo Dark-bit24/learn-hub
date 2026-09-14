@@ -89,7 +89,7 @@
     <!-- Results Grid -->
     <div v-else>
       <div v-if="resources.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <ResourceCard v-for="r in resources" :key="r._id" :resource="r" />
+        <ResourceCard v-for="r in resources" :key="r._id" :resource="r" @deleted="fetchResources" />
       </div>
 
       <div v-else class="text-center py-20 bg-white rounded-2xl border border-slate-200 shadow-xs">

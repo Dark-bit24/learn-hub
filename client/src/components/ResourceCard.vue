@@ -72,6 +72,18 @@
           </svg>
         </a>
 
+        <!-- Quick Delete Button for Admins & Owners -->
+        <button 
+          v-if="canDelete"
+          @click.stop.prevent="handleDelete"
+          class="p-2 text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors border border-rose-200"
+          title="Delete Resource (Admin / Owner)"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+          </svg>
+        </button>
+
         <!-- Read Online Button -->
         <RouterLink 
           :to="`/resources/${resource._id}`" 
@@ -97,10 +109,36 @@ const props = defineProps({
 
 const authStore = useAuthStore()
 
+const emit = defineEmits(['deleted'])
+
 const likesCount = ref(
   (props.resource.saves?.length || 0) + (props.resource.guestLikes?.length || 0)
 )
 const isLiked = ref(false)
+
+const canDelete = computed(() => {
+  if (!authStore.isLoggedIn) return false
+  if (authStore.isAdmin) return true
+  const uploaderId = typeof props.resource.uploadedBy === 'object' 
+    ? (props.resource.uploadedBy._id || props.resource.uploadedBy)
+    : props.resource.uploadedBy
+  return uploaderId?.toString() === authStore.currentUser?._id?.toString()
+})
+
+const handleDelete = async () => {
+  if (!confirm(`Are you sure you want to delete "${props.resource.title}"?`)) return
+  try {
+    if (authStore.isAdmin) {
+      await api.delete(`/admin/resources/${props.resource._id}`)
+    } else {
+      await api.delete(`/resources/${props.resource._id}`)
+    }
+    emit('deleted', props.resource._id)
+  } catch (err) {
+    console.error('Delete resource error:', err)
+    alert(err.response?.data?.message || 'Failed to delete resource')
+  }
+}
 
 onMounted(() => {
   if (authStore.isLoggedIn) {

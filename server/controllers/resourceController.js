@@ -278,8 +278,13 @@ const deleteResource = async (req, res) => {
       return res.status(404).json({ message: 'Resource not found' });
     }
 
+    const uploaderId = resource.uploadedBy ? (resource.uploadedBy._id ? resource.uploadedBy._id.toString() : resource.uploadedBy.toString()) : '';
+    const userId = req.user && req.user._id ? req.user._id.toString() : '';
+    const isOwner = Boolean(uploaderId && userId && uploaderId === userId);
+    const isAdminUser = Boolean(req.user && (req.user.role === 'admin' || req.user.email === 'admin@gmail.com'));
+
     // Only owner or admin can delete
-    if (resource.uploadedBy.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    if (!isOwner && !isAdminUser) {
       return res.status(403).json({ message: 'Not authorized to delete this resource' });
     }
 
